@@ -1,3 +1,24 @@
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/figtree-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/space-mono-latin-regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/space-mono-latin-bold.woff2") format("woff2");
+}
 :root {
   color-scheme: light;
   --paper: #f1ede4;
@@ -13,9 +34,9 @@
   --mint: #91b5a1;
   --bluegray: #849ba1;
   --danger: #a34f47;
-  --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --serif: "Figtree", "Segoe UI", sans-serif;
+  --sans: "Figtree", "Segoe UI", sans-serif;
+  --mono: "Space Mono", "SFMono-Regular", Consolas, monospace;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }

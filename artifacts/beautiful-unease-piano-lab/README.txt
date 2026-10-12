@@ -2,11 +2,11 @@ BEAUTIFUL UNEASE
 Piano Harmony & Melody Lab
 ==========================
 
-Open index.html directly in a current desktop browser. The project uses only
-the four files in this folder: index.html, styles.css, app.js and this README.
-It has no build step, npm runtime, network requests, remote fonts, samples,
-server, account, API or service worker. The same files are used by the preview
-host. Browser audio begins only after you press Listen.
+Open index.html directly in a current desktop browser. The project uses the
+four root files (index.html, styles.css, app.js and this README) plus the local
+fonts folder. It has no build step, npm runtime, network requests, remote fonts,
+samples, server, account, API or service worker. The same files are used by the
+preview host. Browser audio begins only after you press Listen.
 
 WHAT IS HERE
 ------------
@@ -35,7 +35,8 @@ Files available from the app:
   - Standard MIDI (.mid)
   - Project JSON (validated on open)
   - Human-readable event CSV
-  - beautiful-unease-piano-lab.zip (contains only the four project files)
+  - beautiful-unease-piano-lab.zip (contains the four root files, bundled
+    Figtree and Space Mono fonts, and their SIL Open Font Licenses)
 
 SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 -------------------------------------
