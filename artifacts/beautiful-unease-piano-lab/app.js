@@ -357,7 +357,7 @@
     rows.push(addDiagnostic("Bar 3 begins",rom.some(e=>e.startBeat===8),"Beat 9 / bar 3 begins at tick 3,840."));
     rows.push(addDiagnostic("First melody event",rom.some(e=>e.layer==="melody"&&e.startBeat===1&&e.durationBeats===2),"Bar 1 beat 2 starts at tick 480 and lasts 960 ticks."));
     rows.push(addDiagnostic("Final listed melody",rom.some(e=>e.layer==="melody"&&e.startBeat===30&&e.durationBeats===1),"Bar 8 beat 3 is tick 14,400; the final G5 lasts one beat."));
-    rows.push(addDiagnostic("Preset 1 harmony count",rom.filter(e=>e.layer!=="melody").length===24,`${rom.filter(e=>e.layer!=="melody").length} exact listed harmony events are embedded. The supplied note list sums to 23, while acceptance asks for 24; no extra pitch was invented.`));
+    rows.push(addDiagnostic("Prompt harmony-count discrepancy",false,`${rom.filter(e=>e.layer!=="melody").length} non-melody events are listed, but the acceptance check says 24. The app keeps the specified notes rather than inventing another pitch.`,true));
     rows.push(addDiagnostic("Preset 1 melody pitches",JSON.stringify(sortEvents(rom.filter(e=>e.layer==="melody")).map(e=>e.midi))===JSON.stringify([67,63,62,67,63,60,68,67,63,72,71,67]),"All 12 melody labels map from the specified FL Studio octave convention to their MIDI pitches."));
     rows.push(addDiagnostic("Preset 1 melody count",rom.filter(e=>e.layer==="melody").length===12,"12 exact melody events."));
     rows.push(addDiagnostic("Dyad pitch pairs",JSON.stringify(dyads.filter(e=>e.layer==="chord").sort((a,b)=>a.startBeat-b.startBeat||a.midi-b.midi).reduce((arr,e,i)=>{(arr[Math.floor(i/2)]||(arr[Math.floor(i/2)]=[])).push(e.midi);return arr;},[]))===JSON.stringify([[51,56],[51,55],[53,58],[53,57]]),"Pairs match the specified MIDI pitches."));
@@ -549,7 +549,7 @@
     }
     return comparison;
   }
-  $("lessonListen").addEventListener("click",()=>playAudio(state.events));
+  $("lessonListen").addEventListener("click",()=>{if(state.isPlaying)stopAudio(true);else playAudio(state.events);});
   $("compareToggle").addEventListener("change",e=>state.compare=e.target.checked);
   $("compareListen").addEventListener("click",()=>{
     if(!state.compare){playAudio(state.events);return;}
@@ -631,6 +631,9 @@
   function updatePlayState(){
     $("playButton").textContent=state.isPlaying?"Ⅱ Pause":"▶ Listen";
     $("playButton").setAttribute("aria-label",state.isPlaying?"Pause playback":"Start playback");
+    $("lessonListen").textContent=state.isPlaying?"■ Stop idea":"Listen to this idea";
+    $("lessonListen").setAttribute("aria-label",state.isPlaying?"Stop playback":"Play this lesson idea");
+    $("lessonListen").setAttribute("aria-pressed",String(state.isPlaying));
     $("readoutLength").textContent=totalBeats()+" beats";
   }
   // MIDI Standard File format 1, 480 PPQ, no runtime dependencies.
