@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Beautiful Unease: Piano Harmony & Melody Lab"
+description = "An offline-capable beginner piano composition lab for composing original romantic, melancholic, slightly unsettling cues, with exact FL Studio notes and timings, an editable piano roll, synthetic playback, MIDI and JSON export, and downloadable static project files."
+version = "1.0.0"
+id = "artifacts/beautiful-unease-piano-lab"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19773
+
+[services.development]
+run = "pnpm --filter @workspace/beautiful-unease-piano-lab run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/beautiful-unease-piano-lab", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/beautiful-unease-piano-lab/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19773"
+BASE_PATH = "/"
