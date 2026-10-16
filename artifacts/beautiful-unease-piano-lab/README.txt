@@ -10,9 +10,11 @@ preview host. Browser audio begins only after you press Listen.
 
 WHAT IS HERE
 ------------
-Three embedded starting presets: Romantic melancholy (62 BPM), Paired dyads
-(62 BPM), and Held bass (58 BPM). The roll, event table, sound preview, project
-JSON and MIDI all read the active event array. FL Studio labels use MIDI 60 =
+Six embedded starting moods: Romantic melancholy (62 BPM), Paired dyads
+(62 BPM), Held bass (58 BPM), Blue hour mystery (66 BPM), Windowlight (72 BPM),
+and Tidepool reflections (64 BPM). Each starts with an original cue. The roll,
+event table, sound preview, project JSON and MIDI all read the active event
+array. FL Studio labels use MIDI 60 =
 C5; Scientific labels use MIDI 60 = C4. Changing label convention never
 changes a note's MIDI number.
 

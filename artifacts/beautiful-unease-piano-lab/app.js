@@ -52,10 +52,58 @@
     [[2,67],[5,63],[10,67],[13,63],[18,68],[21,67],[26,65],[29,62]].forEach((n,i)=>ev.push(makeEvent("h-m"+i,"melody",n[1],n[0]-1,2,62)));
     return ev;
   }
+  function buildBlueHour() {
+    const ev = [];
+    const chords = [
+      {start:0,len:8,notes:[38,45,53,60,64]},
+      {start:8,len:8,notes:[34,41,50,53,57]},
+      {start:16,len:8,notes:[31,38,46,53,57]},
+      {start:24,len:4,notes:[33,40,50,55,57]},
+      {start:28,len:4,notes:[33,40,49,55,64]}
+    ];
+    chords.forEach((ch,ci)=>ch.notes.forEach((m,ni)=>ev.push(makeEvent("bh-c"+ci+"-"+ni,ni===0?"bass":"chord",m,ch.start,ch.len,ni===0?40:46))));
+    [[2,2,69,2],[5,1,65,2],[7,3,64,1],[10,2,62,2],[13,1,65,2],[15,3,64,1],[18,2,67,2],[21,1,65,2],[23,3,62,1],[26,2,64,2],[29,1,61,1],[31,3,62,1]]
+      .forEach((n,i)=>ev.push(makeEvent("bh-m"+i,"melody",n[2],n[0]-1,n[3],60)));
+    return ev;
+  }
+  function buildWindowlight() {
+    const ev = [];
+    const chords = [
+      {start:0,len:8,notes:[41,48,53,57,60,64]},
+      {start:8,len:8,notes:[38,45,53,57,60]},
+      {start:16,len:8,notes:[34,41,50,53,57]},
+      {start:24,len:4,notes:[36,43,53,58,60]},
+      {start:28,len:4,notes:[41,48,53,57,64]}
+    ];
+    chords.forEach((ch,ci)=>ch.notes.forEach((m,ni)=>ev.push(makeEvent("wl-c"+ci+"-"+ni,ni===0?"bass":"chord",m,ch.start,ch.len,ni===0?40:46))));
+    [[2,2,72,2],[4,1,69,1],[6,3,67,1],[10,2,69,2],[13,1,72,2],[15,3,74,1],[18,2,72,2],[21,1,69,2],[23,3,67,1],[26,2,65,2],[29,1,69,2],[31,3,65,1]]
+      .forEach((n,i)=>ev.push(makeEvent("wl-m"+i,"melody",n[2],n[0]-1,n[3],58)));
+    return ev;
+  }
+  function buildTidepool() {
+    const ev = [];
+    [[0,33,4],[4,40,4],[8,29,4],[12,36,4],[16,38,4],[20,45,4],[24,40,4],[28,35,2],[30,33,2]]
+      .forEach((n,i)=>ev.push(makeEvent("tp-b"+i,"bass",n[1],n[0],n[2],40)));
+    const chords = [
+      {start:0,len:8,notes:[48,52,55,59]},
+      {start:8,len:8,notes:[45,48,52,57]},
+      {start:16,len:8,notes:[45,53,60,64]},
+      {start:24,len:4,notes:[47,52,57,62]},
+      {start:28,len:2,notes:[47,52,56,62]},
+      {start:30,len:2,notes:[48,52,55,59]}
+    ];
+    chords.forEach((ch,ci)=>ch.notes.forEach((m,ni)=>ev.push(makeEvent("tp-c"+ci+"-"+ni,"chord",m,ch.start,ch.len,46))));
+    [[2,2,72,2],[4,1,69,2],[7,3,67,1],[10,2,72,2],[13,1,69,2],[15,3,72,1],[18,2,74,2],[21,1,72,2],[23,3,69,1],[26,2,71,2],[29,1,68,1],[31,3,69,1]]
+      .forEach((n,i)=>ev.push(makeEvent("tp-m"+i,"melody",n[2],n[0]-1,n[3],58)));
+    return ev;
+  }
   const PRESETS = {
     romantic: { name:"Romantic melancholy", bars:8, tempo:62, events:buildRomantic(), description:"C minor · a suspended fourth resolves by a half step." },
     dyads: { name:"Paired dyads", bars:4, tempo:62, events:buildDyads(false), description:"Fourth to third · paired two-note shapes." },
-    held: { name:"Held bass", bars:8, tempo:58, events:buildHeld(false), description:"C pedal point · four changing upper harmonies." }
+    held: { name:"Held bass", bars:8, tempo:58, events:buildHeld(false), description:"C pedal point · four changing upper harmonies." },
+    "blue-hour": { name:"Blue hour mystery", bars:8, tempo:66, events:buildBlueHour(), description:"D minor · suspended lounge harmony drifts toward an unanswered A7." },
+    windowlight: { name:"Windowlight", bars:8, tempo:72, events:buildWindowlight(), description:"F major · warm borrowed colors settle into a clear tonic." },
+    tidepool: { name:"Tidepool reflections", bars:8, tempo:64, events:buildTidepool(), description:"A minor · a moving bass line and broken chords find a quiet landing." }
   };
   const MOOD_PALETTES = {
     "pnw-mystery": {
@@ -617,6 +665,12 @@
     rows.push(addDiagnostic("Preset 1 melody pitches",JSON.stringify(sortEvents(rom.filter(e=>e.layer==="melody")).map(e=>e.midi))===JSON.stringify([67,63,62,67,63,60,68,67,63,72,71,67]),"All 12 melody labels map from the specified FL Studio octave convention to their MIDI pitches."));
     rows.push(addDiagnostic("Preset 1 melody count",rom.filter(e=>e.layer==="melody").length===12,"12 exact melody events."));
     rows.push(addDiagnostic("Dyad pitch pairs",JSON.stringify(dyads.filter(e=>e.layer==="chord").sort((a,b)=>a.startBeat-b.startBeat||a.midi-b.midi).reduce((arr,e,i)=>{(arr[Math.floor(i/2)]||(arr[Math.floor(i/2)]=[])).push(e.midi);return arr;},[]))===JSON.stringify([[51,56],[51,55],[53,58],[53,57]]),"Pairs match the specified MIDI pitches."));
+    const additionalPresetIds=["blue-hour","windowlight","tidepool"];
+    const additionalPresetsValid=additionalPresetIds.every(id=>{
+      const preset=PRESETS[id],eventIds=new Set(preset.events.map(e=>e.id));
+      return preset.bars===8&&preset.events.length>0&&eventIds.size===preset.events.length&&preset.events.every(e=>validEvent(e)&&e.startBeat+e.durationBeats<=preset.bars*4)&&Array.from($("presetSelect").options).some(option=>option.value===id);
+    });
+    rows.push(addDiagnostic("Additional starting moods",additionalPresetsValid,"Blue hour mystery, Windowlight and Tidepool reflections are selectable, unique and valid eight-bar cues."));
     rows.push(addDiagnostic("Loop duration",Math.abs(32*60/62-31.0)<.1,"A 32-beat loop at 62 BPM lasts 31.0 seconds."));
     const paletteCount=Object.keys(MOOD_PALETTES).length;
     rows.push(addDiagnostic("Three original mood palettes",paletteCount===3&&Object.values(MOOD_PALETTES).every(p=>p.variants.length===3),"Each palette has three named alternatives; generated music uses local synthesis and does not copy a soundtrack."));
@@ -1012,7 +1066,7 @@
       try{
         const data=JSON.parse(String(reader.result));
         if(!data||data.format!=="beautiful-unease-project"||data.version!==1||!Array.isArray(data.events))throw new Error("Expected a Beautiful Unease project, version 1, with an events array.");
-        if(!PRESETS[data.presetId])throw new Error("Unknown presetId. Choose romantic, dyads or held.");
+        if(!PRESETS[data.presetId])throw new Error("Unknown presetId. Choose one of the built-in starting moods.");
         const errs=[];
         data.events.forEach((e,i)=>{if(!e||typeof e.id!=="string"||!validEvent(e))errs.push(`Event ${i+1} needs id, valid layer, MIDI 0–127, start ≥ 0, positive duration and velocity 1–127.`);});
         if(errs.length)throw new Error(errs.slice(0,3).join(" "));
