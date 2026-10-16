@@ -57,14 +57,53 @@
     dyads: { name:"Paired dyads", bars:4, tempo:62, events:buildDyads(false), description:"Fourth to third · paired two-note shapes." },
     held: { name:"Held bass", bars:8, tempo:58, events:buildHeld(false), description:"C pedal point · four changing upper harmonies." }
   };
+  const MOOD_PALETTES = {
+    "pnw-mystery": {
+      name:"Pacific Northwest dream mystery",
+      summary:"Late-night lounge pacing, suspended color, a sparse motif, and a gently wavering piano tone.",
+      scale:[0,2,3,5,7,8,11], toneId:"dream",
+      variants:[
+        {name:"Blue hour",tempo:-8,harmony:"ninth",melody:"sparse",bass:"pedal",description:"A held C pedal lets a cool added ninth hang in the room."},
+        {name:"Fogline",tempo:-5,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"A chromatic inner-voice sigh meets a melody that waits before answering."},
+        {name:"Last booth",tempo:-2,harmony:"open",melody:"passing",bass:"pedal",description:"Open fifths and a few passing notes drift over a steady low note."}
+      ]
+    },
+    "wistful-romance": {
+      name:"Wistful romance",
+      summary:"A tender minor palette, breathing phrases, and a slow, stepwise bass line.",
+      scale:[0,2,3,5,7,8,10], toneId:"warm",
+      variants:[
+        {name:"Soft focus",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A restrained melody leaves room around the extended chords."},
+        {name:"Rain on the window",tempo:2,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"A half-step color and a late entrance make the phrase feel reflective."},
+        {name:"One last thought",tempo:4,harmony:"open",melody:"passing",bass:"stepwise",description:"An answering note fills a rest, then leaves the ending unresolved."}
+      ]
+    },
+    "gentle-resolution": {
+      name:"Gentle resolution",
+      summary:"A warm major palette, grounded bass, and melodies that point toward a clear landing.",
+      scale:[0,2,4,5,7,9,11], toneId:"clear",
+      variants:[
+        {name:"Clearing sky",tempo:2,harmony:"major",melody:"rising",bass:"roots",description:"Minor chord colors brighten into a calm, open major sound."},
+        {name:"Coming home",tempo:5,harmony:"ninth",melody:"delayed",bass:"roots",description:"A gentle major ninth and a delayed phrase bring warmth without rushing."},
+        {name:"First light",tempo:7,harmony:"open",melody:"passing",bass:"roots",description:"The bass anchors a more direct melody with a clear final contour."}
+      ]
+    }
+  };
+  const MOOD_TONES = {
+    piano:{delaySeconds:.12,delayWet:.025,vibratoCents:0,vibratoHz:.22},
+    dream:{delaySeconds:.25,delayWet:.16,vibratoCents:5.5,vibratoHz:.24},
+    warm:{delaySeconds:.18,delayWet:.09,vibratoCents:2,vibratoHz:.18},
+    clear:{delaySeconds:.1,delayWet:.035,vibratoCents:0,vibratoHz:.2}
+  };
   const state = {
     presetId:"romantic", events:[], totalBars:8, tempo:62, transpose:0, seed:1791,
     octave:"fl", snap:1, zoom:34, density:"sparse", ending:"original", variant:"original",
     muted:{bass:false,chord:false,melody:false}, solo:null, selectedId:null,
     undo:[], redo:[], playhead:0, isPlaying:false, currentLesson:0, compare:false,
-    analysisProvisional:false, reattack:false, arrangement:8, seekBeat:0
+    analysisProvisional:false, reattack:false, arrangement:8, seekBeat:0, activeMood:null
   };
-  let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0;
+  let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0;
+  let moodCandidateSet=null;
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
   const beatWidth = () => state.zoom;
   const rowHeight = 15;
@@ -90,8 +129,17 @@
   function eventBarBeat(e) { return { bar:Math.floor(e.startBeat/4)+1, beat:(e.startBeat%4)+1 }; }
   function exactClone() { return copyEvents(PRESETS[state.presetId].events); }
   function makeBaseForSelection(id) { return copyEvents(PRESETS[id].events); }
+  function historySnapshot() {
+    return {events:copyEvents(state.events),tempo:state.tempo,seed:state.seed,activeMood:state.activeMood?{...state.activeMood}:null,analysisProvisional:state.analysisProvisional,selectedId:state.selectedId};
+  }
+  function restoreHistorySnapshot(snapshot) {
+    state.events=copyEvents(snapshot.events);state.tempo=snapshot.tempo;state.seed=snapshot.seed;
+    state.activeMood=snapshot.activeMood?{...snapshot.activeMood}:null;
+    state.analysisProvisional=snapshot.analysisProvisional;state.selectedId=snapshot.selectedId;
+    $("tempoInput").value=state.tempo;$("seedInput").value=state.seed;
+  }
   function remember() {
-    state.undo.push(copyEvents(state.events));
+    state.undo.push(historySnapshot());
     if (state.undo.length > 80) state.undo.shift();
     state.redo.length = 0;
   }
@@ -101,6 +149,162 @@
       Number.isFinite(e.startBeat) && e.startBeat>=0 &&
       Number.isFinite(e.durationBeats) && e.durationBeats>0 &&
       layers.includes(e.layer);
+  }
+  function moodSeed(seed,moodId,variantIndex) {
+    const text=`${seed}|${moodId}|${variantIndex}`;
+    let hash=2166136261;
+    for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619);
+    return hash>>>0;
+  }
+  function seededRandom(seed) {
+    let value=seed>>>0;
+    return ()=>{value=(value+0x6D2B79F5)>>>0;let t=value;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};
+  }
+  function moodScale(palette,transpose) {
+    const offset=((transpose%12)+12)%12;
+    return palette.scale.map(pc=>(pc+offset)%12);
+  }
+  function nearestMoodPitch(midi,scale,preferUp=false) {
+    const octave=Math.floor(midi/12), candidates=[];
+    for(let o=Math.max(0,octave-1);o<=Math.min(10,octave+1);o++){
+      scale.forEach(pc=>{const pitch=o*12+pc;if(pitch>=0&&pitch<=127)candidates.push(pitch);});
+    }
+    return candidates.sort((a,b)=>Math.abs(a-midi)-Math.abs(b-midi)||(preferUp?b-a:a-b))[0]??midi;
+  }
+  function chordGroups(events) {
+    const groups=new Map();
+    events.filter(e=>e.layer==="chord").forEach(e=>{if(!groups.has(e.startBeat))groups.set(e.startBeat,[]);groups.get(e.startBeat).push(e);});
+    return [...groups.entries()].map(([startBeat,notes])=>({startBeat,notes:notes.sort((a,b)=>a.midi-b.midi)})).sort((a,b)=>a.startBeat-b.startBeat);
+  }
+  function tryMoodPitch(note,group,nextPitch) {
+    if(nextPitch<0||nextPitch>127||group.some(other=>other!==note&&other.midi===nextPitch))return false;
+    note.midi=nextPitch;return true;
+  }
+  function uniqueMoodEventId(events,candidateId) {
+    let id=candidateId,suffix=1;
+    while(events.some(event=>event.id===id))id=candidateId+"-"+suffix++;
+    return id;
+  }
+  function applyMoodHarmony(events,palette,variant,scale,rng) {
+    const groups=chordGroups(events);
+    groups.forEach(group=>{group.notes.forEach(note=>{note.midi=nearestMoodPitch(note.midi,scale,rng()<.5);});group.notes.sort((a,b)=>a.midi-b.midi);});
+    if(!groups.length)return;
+    const group=groups[Math.floor(rng()*groups.length)], notes=group.notes;
+    if(variant.harmony==="ninth"){
+      const top=notes[notes.length-1];tryMoodPitch(top,notes,top.midi+2);
+    }else if(variant.harmony==="chromatic"&&notes.length>1){
+      const inner=notes[Math.max(0,notes.length-2)];tryMoodPitch(inner,notes,inner.midi-1);
+    }else if(variant.harmony==="open"){
+      const top=notes[notes.length-1];
+      if(!tryMoodPitch(top,notes,top.midi+7))tryMoodPitch(top,notes,top.midi+5);
+    }else if(variant.harmony==="major"){
+      const top=notes[notes.length-1];tryMoodPitch(top,notes,top.midi+2);
+    }
+  }
+  function ensureMoodBass(events,variant,scale,totalBeats,transpose,seed,moodId,variantIndex) {
+    if(variant.bass==="pedal"){
+      const pedal=36+transpose;
+      const retained=events.filter(e=>e.layer!=="bass");
+      events.splice(0,events.length,...retained,makeEvent(uniqueMoodEventId(retained,`mood-${seed}-${moodId}-${variantIndex}-bass`),"bass",pedal,0,totalBeats,42));
+      return events;
+    }
+    let bass=sortEvents(events.filter(e=>e.layer==="bass"));
+    if(!bass.length){
+      const groups=chordGroups(events);
+      bass=groups.map((group,i)=>{
+        const next=groups[i+1]?.startBeat??totalBeats, root=group.notes[0].midi;
+        const pitch=nearestMoodPitch(Math.max(24,root-12),scale,i%2===0);
+        return makeEvent(uniqueMoodEventId(events,`mood-${seed}-${moodId}-${variantIndex}-bass-${i}`),"bass",pitch,group.startBeat,Math.max(.25,next-group.startBeat),42);
+      });
+      events.push(...bass);
+    }else if(variant.bass==="stepwise"&&bass.length>1){
+      bass.forEach((note,i)=>{if(i>0&&i%2===1)note.midi=Math.max(24,note.midi-1);});
+    }else if(variant.bass==="roots"){
+      bass.forEach((note,i)=>{note.midi=nearestMoodPitch(note.midi,scale,i%2===0);});
+    }
+    return events;
+  }
+  function createMoodMotif(events,palette,variant,totalBeats,scale,seed,moodId,variantIndex) {
+    if(events.some(e=>e.layer==="melody"))return events;
+    const groups=chordGroups(events);
+    const contour=[-2,1,0,3,-1,2,0,2];
+    const additions=groups.map((group,i)=>{
+      const startBeat=group.startBeat+1;
+      if(startBeat>=totalBeats)return null;
+      const top=group.notes[group.notes.length-1].midi;
+      const target=top+12+contour[(i+variantIndex)%contour.length];
+      const midi=nearestMoodPitch(target,scale,seededRandom(seed+i)()>.5);
+      const next=groups[i+1]?.startBeat??totalBeats;
+      const durationBeats=Math.min(1.5,Math.max(.25,next-startBeat));
+      return makeEvent(uniqueMoodEventId(events,`mood-${seed}-${moodId}-${variantIndex}-motif-${i}`),"melody",midi,startBeat,durationBeats,58);
+    }).filter(Boolean);
+    events.push(...additions);return events;
+  }
+  function applyMoodMelody(events,variant,scale,totalBeats,rng,seed,moodId,variantIndex) {
+    let melody=sortEvents(events.filter(e=>e.layer==="melody"));
+    melody.forEach((note,i)=>{note.midi=nearestMoodPitch(note.midi,scale,rng()<.5);});
+    if(variant.melody==="sparse"&&melody.length>3){
+      const offset=Math.floor(rng()*4),remove=new Set(melody.filter((_,i)=>(i+offset)%4===2).slice(0,Math.max(1,Math.floor(melody.length/4))).map(e=>e.id));
+      for(let i=events.length-1;i>=0;i--)if(remove.has(events[i].id))events.splice(i,1);
+    }else if(variant.melody==="delayed"&&melody.length>1){
+      const starts=melody.map(e=>e.startBeat);
+      melody.forEach((note,i)=>{
+        if(i%2===1){
+          const nextStart=starts[i+1]??totalBeats,newStart=note.startBeat+.5;
+          if(newStart<nextStart&&newStart<totalBeats){note.durationBeats=Math.min(note.durationBeats,nextStart-newStart);note.startBeat=newStart;}
+        }
+      });
+    }else if(variant.melody==="passing"&&melody.length>1){
+      const additions=[];
+      for(let i=0;i<melody.length-1;i++){
+        const current=melody[i],next=melody[i+1],gap=next.startBeat-(current.startBeat+current.durationBeats);
+        if(gap>=.5){
+          const startBeat=current.startBeat+current.durationBeats,durationBeats=Math.min(.5,gap);
+          const target=Math.round((current.midi+next.midi)/2),midi=nearestMoodPitch(target,scale,rng()<.5);
+          additions.push(makeEvent(uniqueMoodEventId(events.concat(additions),`mood-${seed}-${moodId}-${variantIndex}-answer-${i}`),"melody",midi,startBeat,durationBeats,54));
+        }
+      }
+      events.push(...additions);
+    }else if(variant.melody==="rising"&&melody.length>1){
+      melody.forEach((note,i)=>{if(i>=Math.ceil(melody.length/2))note.midi=nearestMoodPitch(note.midi+2,scale,true);});
+    }
+    return events;
+  }
+  function moodCandidateError(events,totalBeats) {
+    const ids=new Set();
+    for(const event of events){
+      if(!validEvent(event))return "An event has an invalid pitch, layer, time, duration or velocity.";
+      if(event.startBeat+event.durationBeats>totalBeats+.0001)return "A generated note extends past the arrangement.";
+      if(ids.has(event.id))return "Generated event identifiers are not unique.";
+      ids.add(event.id);
+    }
+    const byPitch=new Map();
+    events.forEach(event=>{const key=event.layer+":"+event.midi;if(!byPitch.has(key))byPitch.set(key,[]);byPitch.get(key).push(event);});
+    for(const notes of byPitch.values()){
+      notes.sort((a,b)=>a.startBeat-b.startBeat);
+      for(let i=1;i<notes.length;i++)if(notes[i-1].startBeat+notes[i-1].durationBeats>notes[i].startBeat)return "Two generated notes overlap on the same MIDI track.";
+    }
+    return "";
+  }
+  function createMoodCandidates(base,moodId,seed,tempo,bars,transpose) {
+    const palette=MOOD_PALETTES[moodId];
+    if(!palette)throw new Error("Choose one of the available original mood palettes.");
+    if(!Number.isInteger(seed)||seed<0||seed>4294967295)throw new Error("Variation seed must be a whole number from 0 to 4,294,967,295.");
+    const totalBeats=bars*4,scale=moodScale(palette,transpose);
+    return palette.variants.map((variant,variantIndex)=>{
+      const random=seededRandom(moodSeed(seed,moodId,variantIndex)),events=copyEvents(base);
+      applyMoodHarmony(events,palette,variant,scale,random);
+      ensureMoodBass(events,variant,scale,totalBeats,transpose,seed,moodId,variantIndex);
+      createMoodMotif(events,palette,variant,totalBeats,scale,seed,moodId,variantIndex);
+      applyMoodMelody(events,variant,scale,totalBeats,random,seed,moodId,variantIndex);
+      const candidateTempo=Math.max(45,Math.min(85,tempo+variant.tempo));
+      const error=moodCandidateError(events,totalBeats);
+      if(error)throw new Error(variant.name+": "+error);
+      return {moodId,seed,variantIndex,name:variant.name,tempo:candidateTempo,description:variant.description,moodName:palette.name,moodSummary:palette.summary,toneId:palette.toneId,events:sortEvents(events)};
+    });
+  }
+  function eventStateSignature(events,tempo,bars) {
+    return JSON.stringify({events:sortEvents(events),tempo,bars});
   }
   function toast(message, isError) {
     const el=$("toast"); el.textContent=message; el.style.borderLeftColor=isError?"var(--danger)":"var(--rose)";
@@ -144,6 +348,7 @@
     state.arrangement=PRESETS[id].bars; state.totalBars=PRESETS[id].bars;
     state.ending="original"; state.variant="original"; state.reattack=false;
     state.density="sparse";state.muted={bass:false,chord:false,melody:false};state.solo=null;state.seekBeat=0;
+    state.activeMood=null;moodCandidateSet=null;
     state.events=makeBaseForSelection(id); state.selectedId=null; state.analysisProvisional=false;
     state.undo=[]; state.redo=[];
     $("presetSelect").value=id; $("tempoInput").value=state.tempo; $("transposeInput").value="0";
@@ -153,6 +358,7 @@
     renderAll(); toast("Exact "+PRESETS[id].name+" preset restored.");
   }
   function refreshDerived() {
+    state.activeMood=null;moodCandidateSet=null;
     const preset=PRESETS[state.presetId];
     let base=createArrangement(preset.events,state.arrangement,state.presetId);
     if(state.presetId==="held" && state.reattack && state.arrangement===8) base=buildHeld(true);
@@ -170,14 +376,15 @@
     state.events=ended.events.map(e=>({...e,midi:e.midi+state.transpose}));
   }
   function renderAll() {
-    $("currentPresetName").textContent=PRESETS[state.presetId].name;
-    $("loopStamp").textContent=state.totalBars+" bars · "+state.tempo+" BPM · "+PRESETS[state.presetId].description;
+    const activeMood=activeMoodDetails();
+    $("currentPresetName").textContent=activeMood?activeMood.palette.name+" · "+activeMood.variant.name:PRESETS[state.presetId].name;
+    $("loopStamp").textContent=state.totalBars+" bars · "+state.tempo+" BPM · "+(activeMood?activeMood.variant.description:PRESETS[state.presetId].description);
     $("readoutLength").textContent=(totalBeats())+" beats";
     $("readoutTime").textContent=(totalBeats()*60/state.tempo).toFixed(1)+" sec";
     $("analysisStatus").textContent=state.analysisProvisional?"Provisional after edit":"Preset harmony";
     $("readoutHarmony").textContent=currentHarmony();
     $("octaveMode").value=state.octave; $("calibrationCurrent").textContent=pitchLabel(60);
-    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderDiagnostics();
+    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderMoodCandidates(); renderDiagnostics();
     $("undoButton").disabled=!state.undo.length; $("redoButton").disabled=!state.redo.length;
     $("endingSelect").value=state.ending; $("structureSelect").value=String(state.arrangement);
     updatePlayState();
@@ -290,6 +497,55 @@
       return card;
     }));
   }
+  function activeMoodDetails() {
+    if(!state.activeMood)return null;
+    const palette=MOOD_PALETTES[state.activeMood.moodId],variant=palette?.variants[state.activeMood.variantIndex];
+    return palette&&variant?{palette,variant}:null;
+  }
+  function renderMoodCandidates() {
+    const grid=$("moodVariantGrid");
+    if(!grid)return;
+    const seed=Number($("seedInput").value);
+    if(moodCandidateSet&&(moodCandidateSet.signature!==eventStateSignature(state.events,state.tempo,state.totalBars)||moodCandidateSet.moodId!==$("moodSelect").value||moodCandidateSet.seed!==seed))moodCandidateSet=null;
+    const seedNote=document.querySelector(".seed-note");
+    if(!moodCandidateSet){
+      if(seedNote)seedNote.textContent="Repeatable from this seed";
+      const empty=document.createElement("p");empty.className="variant-description";
+      empty.textContent="Generate three original ideas. Your current cue stays unchanged until you apply one.";
+      grid.replaceChildren(empty);return;
+    }
+    if(seedNote)seedNote.textContent=`Seed ${moodCandidateSet.seed} · repeatable`;
+    grid.replaceChildren(...moodCandidateSet.candidates.map((candidate,index)=>{
+      const card=document.createElement("article");card.className="mood-variant";card.dataset.variationIndex=String(index);
+      const number=document.createElement("div");number.className="variant-index";number.textContent=String(index+1).padStart(2,"0");
+      const label=document.createElement("span");label.textContent=candidate.moodName.toUpperCase();number.append(label);
+      const title=document.createElement("h3");title.textContent=candidate.name;
+      const tempo=document.createElement("div");tempo.className="variant-tempo";
+      const tempoLabel=document.createElement("span");tempoLabel.textContent="Tempo";
+      const tempoValue=document.createElement("strong");tempoValue.textContent=candidate.tempo+" BPM";
+      tempo.append(tempoLabel,tempoValue);
+      const description=document.createElement("p");description.className="variant-description";description.textContent=candidate.description+" "+candidate.moodSummary;
+      const actions=document.createElement("div");actions.className="variant-actions";
+      [["preview","Preview"],["apply","Apply to cue"]].forEach(([action,text])=>{
+        const button=document.createElement("button");button.type="button";button.className="btn btn-small"+(action==="apply"?" btn-apply":"");
+        button.dataset.moodAction=action;button.dataset.variationIndex=String(index);button.textContent=text;
+        button.setAttribute("aria-label",`${text}: ${candidate.name}`);actions.append(button);
+      });
+      card.append(number,title,tempo,description,actions);return card;
+    }));
+  }
+  function applyMoodCandidate(candidate) {
+    const error=moodCandidateError(candidate.events,state.totalBars*4);
+    if(error){toast("This version could not be applied: "+error,true);return;}
+    if(state.isPlaying)stopAudio(true);
+    remember();
+    state.events=copyEvents(candidate.events);state.tempo=candidate.tempo;state.seed=candidate.seed;
+    state.activeMood={moodId:candidate.moodId,variantIndex:candidate.variantIndex,seed:candidate.seed};
+    state.analysisProvisional=true;state.selectedId=null;state.variant="original";
+    $("tempoInput").value=state.tempo;$("seedInput").value=state.seed;$("variantSelect").value="original";
+    moodCandidateSet=null;renderAll();
+    toast(candidate.name+" is now the active cue. The piano roll, event table and exports use this version.");
+  }
   function addDiagnostic(title,pass,detail,info=false){
     const row=document.createElement("div");row.className="diagnostic-row";
     const badge=document.createElement("span");badge.className="badge "+(info?"info":pass?"pass":"fail");badge.textContent=info?"NOTE":pass?"PASS":"FAIL";
@@ -362,6 +618,18 @@
     rows.push(addDiagnostic("Preset 1 melody count",rom.filter(e=>e.layer==="melody").length===12,"12 exact melody events."));
     rows.push(addDiagnostic("Dyad pitch pairs",JSON.stringify(dyads.filter(e=>e.layer==="chord").sort((a,b)=>a.startBeat-b.startBeat||a.midi-b.midi).reduce((arr,e,i)=>{(arr[Math.floor(i/2)]||(arr[Math.floor(i/2)]=[])).push(e.midi);return arr;},[]))===JSON.stringify([[51,56],[51,55],[53,58],[53,57]]),"Pairs match the specified MIDI pitches."));
     rows.push(addDiagnostic("Loop duration",Math.abs(32*60/62-31.0)<.1,"A 32-beat loop at 62 BPM lasts 31.0 seconds."));
+    const paletteCount=Object.keys(MOOD_PALETTES).length;
+    rows.push(addDiagnostic("Three original mood palettes",paletteCount===3&&Object.values(MOOD_PALETTES).every(p=>p.variants.length===3),"Each palette has three named alternatives; generated music uses local synthesis and does not copy a soundtrack."));
+    try{
+      const generated=Object.keys(MOOD_PALETTES).map(moodId=>createMoodCandidates(rom,moodId,1791,62,8,0));
+      const repeated=Object.keys(MOOD_PALETTES).map(moodId=>createMoodCandidates(rom,moodId,1791,62,8,0));
+      const repeatable=JSON.stringify(generated.map(set=>set.map(c=>c.events)))===JSON.stringify(repeated.map(set=>set.map(c=>c.events)));
+      const distinct=generated.every(set=>new Set(set.map(c=>JSON.stringify({tempo:c.tempo,events:c.events}))).size===3);
+      const valid=generated.every(set=>set.length===3&&set.every(c=>!moodCandidateError(c.events,32)));
+      const dyadSet=createMoodCandidates(dyads,"pnw-mystery",1791,62,4,0);
+      const dyadLayers=dyadSet.every(c=>c.events.some(e=>e.layer==="melody")&&c.events.some(e=>e.layer==="bass"));
+      rows.push(addDiagnostic("Seeded mood variation checks",repeatable&&distinct&&valid&&dyadLayers,"Same seed repeats exactly; all nine outputs are distinct and valid, and dyads gain melody and bass."));
+    }catch(error){rows.push(addDiagnostic("Seeded mood variation checks",false,error.message));}
     try {
       const result=inspectMidi(createMidi());
        rows.push(addDiagnostic("Generated MIDI structure",true,`Current export parsed: format ${result.format}, ${result.trackCount} tracks, ${result.ppq} PPQ, tempo, 4/4 meter, pitch/duration/velocity, no sustain, note-off ordering and all ${result.ends.length} track ends verified.`));
@@ -462,8 +730,8 @@
     if(midi===null){toast("Enter a pitch such as C5, Eb4 or F#3.",true);return;}
     $("noteMidi").value=midi;
   });
-  $("undoButton").addEventListener("click",()=>{if(!state.undo.length)return;state.redo.push(copyEvents(state.events));state.events=state.undo.pop();state.analysisProvisional=true;renderAll();});
-  $("redoButton").addEventListener("click",()=>{if(!state.redo.length)return;state.undo.push(copyEvents(state.events));state.events=state.redo.pop();state.analysisProvisional=true;renderAll();});
+  $("undoButton").addEventListener("click",()=>{if(!state.undo.length)return;state.redo.push(historySnapshot());restoreHistorySnapshot(state.undo.pop());renderAll();});
+  $("redoButton").addEventListener("click",()=>{if(!state.redo.length)return;state.undo.push(historySnapshot());restoreHistorySnapshot(state.redo.pop());renderAll();});
   function changeControl(fn){remember();const old=copyEvents(state.events);fn();if(state.events.some(e=>!validEvent(e))){state.events=old;toast("This change would move a note outside MIDI 0–127. It was not applied.",true);return;}renderAll();}
   $("presetSelect").addEventListener("change",e=>setPreset(e.target.value));
   $("tempoInput").addEventListener("change",e=>{const n=Number(e.target.value);if(!Number.isInteger(n)||n<45||n>85){e.target.value=state.tempo;toast("Tempo must be between 45 and 85 BPM.",true);return;}state.tempo=n;renderAll();});
@@ -491,6 +759,30 @@
     }
   });
   $("resetButton").addEventListener("click",()=>setPreset(state.presetId));
+  function generateMoodVariations() {
+    const rawSeed=$("seedInput").value.trim();
+    if(!/^\d+$/.test(rawSeed)){toast("Enter a whole-number variation seed from 0 to 4,294,967,295.",true);return;}
+    const seed=Number(rawSeed);
+    if(!Number.isSafeInteger(seed)||seed>4294967295){toast("Variation seed must be from 0 to 4,294,967,295.",true);return;}
+    try{
+      const moodId=$("moodSelect").value;
+      const candidates=createMoodCandidates(state.events,moodId,seed,state.tempo,state.totalBars,state.transpose);
+      moodCandidateSet={moodId,seed,candidates,signature:eventStateSignature(state.events,state.tempo,state.totalBars)};
+      renderMoodCandidates();toast("Three "+MOOD_PALETTES[moodId].name.toLowerCase()+" variations generated from seed "+seed+".");
+    }catch(error){moodCandidateSet=null;renderMoodCandidates();toast(error.message||"Could not generate these variations.",true);}
+  }
+  $("generateMoodVariations").addEventListener("click",generateMoodVariations);
+  $("moodSelect").addEventListener("change",renderMoodCandidates);
+  $("seedInput").addEventListener("input",()=>{if(moodCandidateSet)renderMoodCandidates();});
+  $("moodVariantGrid").addEventListener("click",event=>{
+    const button=event.target.closest("button[data-mood-action]");
+    if(!button||!moodCandidateSet)return;
+    const index=Number(button.dataset.variationIndex),candidate=moodCandidateSet.candidates[index];
+    if(!candidate)return;
+    if(button.dataset.moodAction==="preview"){
+      playAudio(candidate.events,0,{tempo:candidate.tempo,length:state.totalBars*4,toneId:candidate.toneId});
+    }else if(button.dataset.moodAction==="apply")applyMoodCandidate(candidate);
+  });
   document.querySelectorAll("[data-layer]").forEach(input=>input.addEventListener("change",()=>{
     state.muted[input.dataset.layer]=!input.checked;renderAll();
   }));
@@ -557,14 +849,18 @@
   });
   $("playButton").addEventListener("click",()=>{if(state.isPlaying)pauseAudio();else playAudio(state.events);});
   $("stopButton").addEventListener("click",()=>stopAudio(true));
-  $("loopToggle").addEventListener("change",()=>{if(state.isPlaying){const at=state.playhead;stopAudio(false);playAudio(state.events,at);}});
+  $("loopToggle").addEventListener("change",()=>{if(state.isPlaying){const at=state.playhead,events=playbackEvents.slice(),options={tempo:playbackTempo,length:playbackLength,toneId:playbackToneId};stopAudio(false);playAudio(events,at,options);}});
   function ensureAudio(){
     if(!audio){
       const AudioCtor=window.AudioContext||window.webkitAudioContext;
       if(!AudioCtor)throw new Error("Web Audio is unavailable in this browser.");
       audio=new AudioCtor();
       const comp=audio.createDynamicsCompressor();comp.threshold.value=-18;comp.knee.value=16;comp.ratio.value=4;comp.attack.value=.008;comp.release.value=.22;
-      const master=audio.createGain();master.gain.value=.48;comp.connect(master);master.connect(audio.destination);audio.master=master;audio.compressor=comp;
+      const delay=audio.createDelay(.8),feedback=audio.createGain(),wet=audio.createGain();
+      delay.delayTime.value=.18;feedback.gain.value=.14;wet.gain.value=0;
+      delay.connect(feedback);feedback.connect(delay);delay.connect(wet);wet.connect(comp);
+      const master=audio.createGain();master.gain.value=.48;comp.connect(master);master.connect(audio.destination);
+      audio.master=master;audio.compressor=comp;audio.delay=delay;audio.delayFeedback=feedback;audio.delayWet=wet;
     }
     return audio.resume();
   }
@@ -576,21 +872,29 @@
     const peak=Math.min(.12,(velocity/127)*.12);
     gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),start+.012);
     gain.gain.exponentialRampToValueAtTime(.0001,start+Math.max(.13,duration));
-    gain.connect(audio.compressor);
+    gain.connect(audio.compressor);gain.connect(audio.delay);
     const partials=[1,2,3,4];const amps=[1,.35,.16,.07];const nodes=[];
+    const tone=MOOD_TONES[playbackToneId]||MOOD_TONES.piano;
+    const vibrato=audio.createOscillator(),vibratoDepth=audio.createGain();
+    vibrato.frequency.value=tone.vibratoHz;vibratoDepth.gain.value=tone.vibratoCents;vibrato.connect(vibratoDepth);
     partials.forEach((partial,i)=>{
-      const osc=audio.createOscillator();const og=audio.createGain();osc.type="sine";osc.frequency.value=fundamental*partial;og.gain.value=amps[i];osc.connect(og);og.connect(gain);osc.start(start);osc.stop(start+Math.max(.14,duration)+.04);nodes.push(osc,og);
+      const osc=audio.createOscillator();const og=audio.createGain();osc.type="sine";osc.frequency.value=fundamental*partial;og.gain.value=amps[i];osc.connect(og);og.connect(gain);vibratoDepth.connect(osc.detune);osc.start(start);osc.stop(start+Math.max(.14,duration)+.04);nodes.push(osc,og);
       osc.onended=()=>{try{osc.disconnect();og.disconnect();}catch(_){}};
     });
+    vibrato.start(start);vibrato.stop(start+Math.max(.14,duration)+.05);vibrato.onended=()=>{try{vibrato.disconnect();vibratoDepth.disconnect();}catch(_){}};
     scheduledVoices.add(gain);setTimeout(()=>scheduledVoices.delete(gain),(Math.max(0,start-now)+duration+.1)*1000);
   }
-  function playAudio(events,offset=null){
+  function playAudio(events,offset=null,options={}){
     if(state.isPlaying){stopAudio(false);}
     ensureAudio().then(()=>{
+      playbackEvents=events.slice();playbackTempo=options.tempo||state.tempo;playbackLength=options.length||totalBeats();
+      playbackToneId=options.toneId||(activeMoodDetails()?.palette.toneId||"piano");
+      const tone=MOOD_TONES[playbackToneId]||MOOD_TONES.piano,now=audio.currentTime;
+      audio.delay.delayTime.setTargetAtTime(tone.delaySeconds,now,.04);audio.delayWet.gain.setTargetAtTime(tone.delayWet,now,.05);
       state.isPlaying=true;playbackOffset=offset===null?state.seekBeat:offset;state.seekBeat=playbackOffset;
-      playbackStart=audio.currentTime-playbackOffset*60/state.tempo;scheduledEvents.clear();
+      playbackStart=audio.currentTime-playbackOffset*60/playbackTempo;scheduledEvents.clear();
       const loop= $("loopToggle").checked;
-      const bpm=state.tempo, len=totalBeats();
+      const bpm=playbackTempo, len=playbackLength;
       function scheduleWindow(){
         if(!state.isPlaying)return;
         const now=audio.currentTime, horizon=now+.18;
@@ -617,12 +921,12 @@
     }).catch(err=>{toast(err.message||"Audio could not start. Use a browser that supports Web Audio.",true);});
   }
   function pauseAudio(){
-    if(audio&&state.isPlaying)state.seekBeat=((audio.currentTime-playbackStart)*state.tempo/60)%totalBeats();
+    if(audio&&state.isPlaying)state.seekBeat=((audio.currentTime-playbackStart)*playbackTempo/60)%playbackLength;
     stopAudio(false);
   }
   function stopAudio(resetPosition=true){
     state.isPlaying=false;if(scheduler){clearInterval(scheduler);scheduler=null;}
-    if(audio){const now=audio.currentTime;try{audio.master.gain.cancelScheduledValues(now);audio.master.gain.setTargetAtTime(.0001,now,.015);setTimeout(()=>{if(audio)audio.master.gain.setTargetAtTime(.48,audio.currentTime,.08);},90);}catch(_){}}
+    if(audio){const now=audio.currentTime;try{audio.master.gain.cancelScheduledValues(now);audio.master.gain.setTargetAtTime(.0001,now,.015);audio.delayWet.gain.setTargetAtTime(0,now,.01);setTimeout(()=>{if(audio)audio.master.gain.setTargetAtTime(.48,audio.currentTime,.08);},90);}catch(_){}}
     scheduledVoices.forEach(node=>{try{node.gain.cancelScheduledValues(audio.currentTime);node.gain.setTargetAtTime(.0001,audio.currentTime,.01);}catch(_){}});
     scheduledVoices.clear();scheduledEvents.clear();
     if(resetPosition)state.seekBeat=0;
@@ -687,7 +991,7 @@
     const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
   }
   function jsonProject(){
-    return {format:"beautiful-unease-project",version:1,tempo:state.tempo,meter:[4,4],totalBars:state.totalBars,presetId:state.presetId,seed:state.seed,octaveConvention:state.octave,events:copyEvents(state.events),arrangementBars:state.arrangement,transpose:state.transpose,ending:state.ending};
+    return {format:"beautiful-unease-project",version:1,tempo:state.tempo,meter:[4,4],totalBars:state.totalBars,presetId:state.presetId,seed:state.seed,octaveConvention:state.octave,events:copyEvents(state.events),arrangementBars:state.arrangement,transpose:state.transpose,ending:state.ending,activeMood:state.activeMood?{...state.activeMood}:null};
   }
   $("midiExport").addEventListener("click",()=>{
     try{const blob=new Blob([createMidi()],{type:"audio/midi"});downloadBlob(blob,"beautiful-unease-cue.mid");setStatus("MIDI format 1 · 480 PPQ · separate harmony, bass and melody tracks.");}
@@ -714,9 +1018,17 @@
         if(errs.length)throw new Error(errs.slice(0,3).join(" "));
         if(!Number.isInteger(data.tempo)||data.tempo<45||data.tempo>85)throw new Error("Tempo must be an integer from 45 to 85 BPM.");
         if(!Number.isInteger(data.totalBars)||data.totalBars<1||data.totalBars>32)throw new Error("totalBars must be between 1 and 32.");
+        const importedSeed=data.seed??1791;
+        if(!Number.isInteger(importedSeed)||importedSeed<0||importedSeed>4294967295)throw new Error("Project seed must be a whole number from 0 to 4,294,967,295.");
+        let importedMood=null;
+        if(data.activeMood!==undefined&&data.activeMood!==null){
+          const mood=data.activeMood,palette=mood&&MOOD_PALETTES[mood.moodId];
+          if(!palette||!Number.isInteger(mood.variantIndex)||!palette.variants[mood.variantIndex]||!Number.isInteger(mood.seed)||mood.seed<0||mood.seed>4294967295)throw new Error("Project mood metadata is invalid.");
+          importedMood={moodId:mood.moodId,variantIndex:mood.variantIndex,seed:mood.seed};
+        }
         remember();state.events=copyEvents(data.events);state.tempo=data.tempo;state.totalBars=data.totalBars;state.arrangement=data.arrangementBars||data.totalBars;
-        state.presetId=data.presetId;state.seed=data.seed||1791;state.octave=data.octaveConvention==="scientific"?"scientific":"fl";state.transpose=Number(data.transpose)||0;state.ending=data.ending||"original";state.analysisProvisional=true;
-        $("presetSelect").value=state.presetId;$("tempoInput").value=state.tempo;$("transposeInput").value=state.transpose;$("octaveMode").value=state.octave;
+        state.presetId=data.presetId;state.seed=importedSeed;state.activeMood=importedMood;state.octave=data.octaveConvention==="scientific"?"scientific":"fl";state.transpose=Number(data.transpose)||0;state.ending=data.ending||"original";state.analysisProvisional=true;moodCandidateSet=null;
+        $("presetSelect").value=state.presetId;$("tempoInput").value=state.tempo;$("transposeInput").value=state.transpose;$("octaveMode").value=state.octave;$("seedInput").value=state.seed;
         renderAll();setStatus("Project loaded. Imported events are the active source of truth.");toast("Project loaded and validated.");
       }catch(err){setStatus("Import failed: "+err.message,true);toast("Import failed: "+err.message,true);}
       ev.target.value="";

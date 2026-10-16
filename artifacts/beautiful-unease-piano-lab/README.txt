@@ -16,6 +16,15 @@ JSON and MIDI all read the active event array. FL Studio labels use MIDI 60 =
 C5; Scientific labels use MIDI 60 = C4. Changing label convention never
 changes a note's MIDI number.
 
+The mood studio offers three original palettes: Pacific Northwest dream
+mystery, wistful romance and gentle resolution. Each seed creates three
+repeatable variations that change more than pitch transposition: harmony,
+melody shape or timing, bass movement and tempo can differ. Preview a variation
+without changing the current cue, or apply it; the piano roll, event table,
+project JSON and MIDI then use the applied event array. Apply supports undo and
+redo. The mystery palette uses broad late-night lounge and suspense traits; it
+does not reproduce any show's theme or soundtrack.
+
 Edit with the mouse, keyboard, event table or numeric editor. Drag a note to
 change pitch/start, drag its right edge to change duration, double-click empty
 roll space to add a note, and use Delete or the selected-note editor to remove
@@ -24,7 +33,9 @@ Undo and redo are available. A click on empty roll space sets the playhead
 position. The roll can scroll vertically and horizontally.
 
 The preview is a modest additive, piano-like synthesis, not a recording or
-sampled acoustic piano. Playback timing uses Web Audio scheduling. MIDI has
+sampled acoustic piano. Mood previews use local delay and subtle pitch
+modulation; these effects are generated in the browser and are not included in
+MIDI. Playback timing uses Web Audio scheduling. MIDI has
 format 1, 480 PPQ, a conductor track and separate harmony, bass and melody
 tracks; program 0 is General MIDI Acoustic Grand Piano. Default export contains
 no sustain controller data. Choose whether MIDI includes every layer or only
@@ -60,13 +71,16 @@ SUGGESTED MANUAL ACCEPTANCE CHECKLIST
    bass and confirm events and exports change.
 8. Listen, pause, resume, stop, loop and seek. Try mute and solo, and test a
    browser without Web Audio to confirm the clear unsupported-browser message.
-9. Drag and resize roll notes, use double-click, Delete, numeric edit, undo
+9. Generate all three mood palettes with the same seed twice; confirm each set
+   repeats. Preview without applying, apply one, verify tempo/notes/export
+   update, then undo and redo. Change the seed and compare the new variants.
+10. Drag and resize roll notes, use double-click, Delete, numeric edit, undo
    and redo. Check keyboard-only operation and zoom/scroll at narrow widths.
-10. Save JSON, reload it in a fresh session, export CSV and MIDI, then inspect
+11. Save JSON, reload it in a fresh session, export CSV and MIDI, then inspect
     the MIDI header (MThd), format 1, four tracks, 480 PPQ, tempo, note event
     ordering and end-of-track positions.
-11. Reset after edits and confirm the exact selected preset is restored.
-12. Inspect the browser console and network panel for errors or requests.
+12. Reset after edits and confirm the exact selected preset is restored.
+13. Inspect the browser console and network panel for errors or requests.
 
 LIMITATIONS / HONEST STATUS
 ---------------------------
