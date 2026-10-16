@@ -1,0 +1,51 @@
+/*
+ * Late-night performance-room atmosphere.
+ * The page itself stays untouched; this only replaces the body backdrop.
+ */
+html {
+  min-height: 100%;
+  background: #e8ded1;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 56rem 31rem at 51% 10%, rgba(235, 185, 119, 0.42), transparent 68%),
+    radial-gradient(ellipse 38rem 27rem at 7% 40%, rgba(111, 58, 57, 0.20), transparent 72%),
+    radial-gradient(ellipse 40rem 31rem at 96% 68%, rgba(94, 56, 48, 0.16), transparent 73%),
+    linear-gradient(180deg, #d6b99c 0%, #e8d9c8 24%, #e9e1d5 58%, #d9c9b9 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(88, 39, 46, 0.12) 0%,
+      rgba(203, 151, 120, 0.04) 5%,
+      transparent 10%,
+      rgba(93, 43, 49, 0.055) 17%,
+      transparent 23%,
+      rgba(248, 217, 175, 0.075) 30%,
+      transparent 36%,
+      rgba(92, 42, 47, 0.055) 43%,
+      transparent 50%,
+      rgba(248, 217, 175, 0.05) 58%,
+      transparent 64%,
+      rgba(89, 40, 46, 0.055) 72%,
+      transparent 79%,
+      rgba(246, 213, 169, 0.065) 87%,
+      transparent 92%,
+      rgba(86, 38, 45, 0.12) 100%
+    ),
+    linear-gradient(112deg, transparent 0 15%, rgba(88, 45, 46, 0.055) 25%, transparent 37%),
+    linear-gradient(72deg, transparent 0 60%, rgba(110, 64, 48, 0.045) 72%, transparent 86%),
+    radial-gradient(ellipse 26rem 10rem at 50% 0%, rgba(249, 213, 156, 0.22), transparent 78%);
+}

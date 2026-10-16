@@ -1,0 +1,28 @@
+/* Misty Pine — pale dusk fog with distant, low-contrast fir ridges.
+   The extracted app remains untouched; this stylesheet only paints its backdrop. */
+body {
+  position: relative;
+  isolation: isolate;
+  background-color: #f1ede4;
+  background-image:
+    radial-gradient(ellipse 62% 52% at 50% 43%, rgba(250, 247, 240, .82) 0%, rgba(247, 244, 235, .5) 53%, transparent 100%),
+    linear-gradient(90deg, rgba(109, 132, 125, .12) 0%, rgba(185, 197, 181, .1) 13%, transparent 31%, transparent 69%, rgba(185, 197, 181, .1) 87%, rgba(109, 132, 125, .12) 100%),
+    linear-gradient(180deg, #e9e8dd 0%, #eeece2 35%, #f1ede4 73%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, transparent 0%, rgba(241, 237, 228, .18) 42%, rgba(241, 237, 228, .04) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 420' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='fade' x1='0' x2='1'%3E%3Cstop stop-color='%236f8880' stop-opacity='.02'/%3E%3Cstop offset='.18' stop-color='%236f8880' stop-opacity='.34'/%3E%3Cstop offset='.52' stop-color='%236f8880' stop-opacity='.13'/%3E%3Cstop offset='.84' stop-color='%236f8880' stop-opacity='.3'/%3E%3Cstop offset='1' stop-color='%236f8880' stop-opacity='.02'/%3E%3C/linearGradient%3E%3ClinearGradient id='near' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%235c756e' stop-opacity='.1'/%3E%3Cstop offset='1' stop-color='%235c756e' stop-opacity='.22'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23fade)' d='M0 294 30 257 52 284 79 224 104 281 135 244 164 291 196 210 224 283 254 249 284 296 315 229 347 291 374 252 405 302 437 231 470 291 500 245 532 299 565 220 600 286 632 248 664 299 697 218 732 289 765 247 798 299 830 227 861 291 892 252 925 300 958 217 990 288 1020 243 1051 300 1084 224 1116 287 1148 249 1179 298 1212 218 1244 287 1275 246 1307 301 1340 222 1372 289 1404 247 1435 298 1467 220 1500 285 1533 241 1565 299 1600 261V420H0Z'/%3E%3Cpath fill='%23869a8d' fill-opacity='.12' d='M0 337 39 298 68 332 98 269 125 329 157 291 189 339 221 278 255 333 289 291 320 338 354 273 386 331 418 287 452 341 484 280 516 334 550 294 581 340 614 274 648 333 680 288 714 340 748 270 781 331 814 290 847 341 880 278 912 335 945 293 978 341 1012 271 1044 334 1077 289 1110 340 1142 276 1175 332 1207 292 1240 341 1274 273 1306 333 1339 287 1372 340 1405 274 1437 334 1470 291 1503 339 1536 280 1568 332 1600 298V420H0Z'/%3E%3Cpath fill='url(%23near)' d='M0 375 28 342 48 366 71 316 94 367 117 337 141 378 165 324 190 371 214 339 238 378 263 316 287 369 311 337 335 380 359 322 384 372 408 338 432 380 456 317 481 369 505 337 529 379 553 320 578 370 602 337 626 381 650 315 675 370 699 337 723 380 747 321 772 371 796 336 820 380 844 317 869 369 893 337 917 380 941 318 966 371 990 338 1014 380 1038 319 1063 370 1087 338 1111 381 1135 316 1160 369 1184 336 1208 379 1232 320 1257 370 1281 337 1305 381 1329 316 1354 370 1378 337 1402 379 1426 321 1451 371 1475 337 1499 380 1523 318 1548 370 1572 338 1600 373V420H0Z'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 44% 22% at 12% 84%, rgba(129, 153, 141, .13), transparent 76%),
+    radial-gradient(ellipse 42% 20% at 88% 80%, rgba(117, 143, 136, .12), transparent 78%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% min(43vh, 390px), 100% 100%, 100% 100%;
+  background-position: center, bottom center, center, center;
+}

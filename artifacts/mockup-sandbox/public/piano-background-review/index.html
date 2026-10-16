@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beautiful Unease — Piano Harmony &amp; Melody Lab</title>
+  <meta name="description" content="A self-contained piano composition lab for learning romantic, melancholic harmony and melody, with exact MIDI-ready events and offline tools.">
+  <meta name="theme-color" content="#f1ede4">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (() => {
+      const variants = new Set(["misty-pine", "velvet-glow", "rainlit-road"]);
+      const variant = new URLSearchParams(window.location.search).get("background");
+      if (!variants.has(variant)) return;
+      const stylesheet = document.createElement("link");
+      stylesheet.rel = "stylesheet";
+      stylesheet.href = `${variant}.css`;
+      document.head.append(stylesheet);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Beautiful Unease home">
+        <span class="brand-mark" aria-hidden="true">b</span>
+        <span class="brand-name">Beautiful Unease</span>
+      </a>
+      <div class="top-meta"><span>PIANO HARMONY &amp; MELODY LAB</span><b>Offline composition desk</b></div>
+    </header>
+    <main class="layout">
+      <section class="intro" aria-labelledby="pageTitle">
+        <div>
+          <div class="eyebrow">A small instrument for uneasy beauty</div>
+          <h1 id="pageTitle">Let the note<br>hang a little longer.</h1>
+          <p class="intro-copy">Shape a piano cue one decision at a time. Hear a synthetic preview, see every note and beat, then carry the exact events into FL Studio.</p>
+        </div>
+        <div class="session-stamp"><strong id="currentPresetName">Romantic melancholy</strong><span id="loopStamp">8 bars · 62 BPM · C minor</span></div>
+      </section>
+      <section class="control-bar" aria-label="Composition controls">
+        <div class="control-group"><label for="presetSelect">Starting mood</label><select id="presetSelect">
+          <option value="romantic">Romantic melancholy · 8 bars</option>
+          <option value="dyads">Paired dyads · 4 bars</option>
+          <option value="held">Held bass · 8 bars</option>
+          <option value="blue-hour">Blue hour mystery · 8 bars</option>
+          <option value="windowlight">Windowlight · 8 bars</option>
+          <option value="tidepool">Tidepool reflections · 8 bars</option>
+        </select></div>
+        <div class="bar-divider"></div>
+        <div class="control-group"><label for="tempoInput">Tempo</label><input id="tempoInput" type="number" min="45" max="85" value="62" aria-label="Tempo in beats per minute"><span class="meter">BPM</span></div>
+        <div class="control-group"><label for="structureSelect">Length</label><select id="structureSelect" aria-label="Arrangement length"><option>4</option><option selected>8</option><option>16</option><option>32</option></select><span class="meter">bars</span></div>
+        <div class="control-group"><label for="transposeInput">Transpose</label><input id="transposeInput" type="number" min="-12" max="12" value="0" aria-label="Chromatic transpose in semitones"><span class="meter">st</span></div>
+        <div class="bar-divider"></div>
+        <div class="control-group"><label for="densitySelect">Melody</label><select id="densitySelect"><option value="sparse">Sparse</option><option value="medium">Medium</option></select></div>
+        <div class="transport">
+          <button class="btn btn-primary" id="playButton" type="button">▶ Listen</button>
+          <button class="btn btn-dark" id="stopButton" type="button">■ Stop</button>
+          <label class="toggle"><input id="loopToggle" type="checkbox" checked> Loop</label>
+        </div>
+      </section>
+      <div class="utility-strip">
+        <div class="control-group"><label for="endingSelect">Ending color</label><select id="endingSelect"><option value="original">Original ending</option><option value="borrowed">Borrowed-major · brighter</option><option value="closed">Closed · resolve to C minor</option><option value="uneasy">Uneasy · C minor-major 9</option></select></div>
+        <div class="control-group"><label for="octaveMode">Octave labels</label><select id="octaveMode"><option value="fl">FL Studio · C5 = MIDI 60</option><option value="scientific">Scientific · C4 = MIDI 60</option></select></div>
+        <div class="control-group"><label for="snapSelect">Snap</label><select id="snapSelect"><option value="1">1 beat</option><option value="0.5">½ beat</option><option value="0.25">¼ beat</option></select></div>
+        <div class="control-group"><label for="zoomSelect">Zoom</label><select id="zoomSelect"><option value="24">Compact</option><option value="34" selected>Comfortable</option><option value="48">Close</option></select></div>
+        <div class="control-group"><label for="variantSelect">Voicing</label><select id="variantSelect"><option value="original">Original</option><option value="octaveUp">Upper register + octave</option><option value="octaveDown">Upper register − octave</option><option value="dyadMelody">Dyads + melody variant</option><option value="regenerate">Seeded variation</option></select></div>
+        <button class="btn btn-small btn-quiet" id="resetButton" type="button">Reset exact preset</button>
+      </div>
+      <section class="mood-studio panel" aria-labelledby="moodStudioTitle">
+        <div class="mood-intro">
+          <div class="eyebrow">A small prompt, three possible paths</div>
+          <h2 id="moodStudioTitle">Find another shade.</h2>
+          <p>Keep the phrase recognizable. Let its atmosphere change around the edges.</p>
+        </div>
+        <div class="mood-controls">
+          <div class="field mood-choice">
+            <label for="moodSelect">Mood palette</label>
+            <select id="moodSelect">
+              <option value="pnw-mystery">Pacific Northwest dream mystery</option>
+              <option value="wistful-romance">Wistful romance</option>
+              <option value="gentle-resolution">Gentle resolution</option>
+              <option value="velvet-noir">Velvet noir</option>
+              <option value="ember-pulse">Ember pulse</option>
+              <option value="prismatic-drift">Prismatic drift</option>
+            </select>
+          </div>
+          <div class="field seed-field">
+            <label for="seedInput">Variation seed</label>
+            <input id="seedInput" type="number" value="1791" inputmode="numeric">
+          </div>
+          <button class="btn btn-primary generate-button" id="generateMoodVariations" type="button">Generate three variations</button>
+        </div>
+        <div class="mood-results-head">
+          <div><span class="eyebrow">Three studies</span><p>Listen for what changes; apply a version to make it the active cue.</p></div>
+          <span class="seed-note">Same seed · new interpretation</span>
+        </div>
+        <div class="mood-variant-grid" id="moodVariantGrid" aria-live="polite">
+          <article class="mood-variant" data-variation-index="0">
+            <div class="variant-index">01 <span>STUDY</span></div>
+            <h3 data-variation-title>Rain held in the trees</h3>
+            <div class="variant-tempo"><span>Tempo</span><strong data-variation-tempo>58 BPM</strong></div>
+            <p class="variant-description" data-variation-description>Low, patient harmony with a melody that pauses just before its answer.</p>
+            <div class="variant-actions">
+              <button class="btn btn-small" type="button" data-mood-action="preview" data-variation-index="0">Preview</button>
+              <button class="btn btn-small btn-apply" type="button" data-mood-action="apply" data-variation-index="0">Apply to cue</button>
+            </div>
+          </article>
+          <article class="mood-variant" data-variation-index="1">
+            <div class="variant-index">02 <span>STUDY</span></div>
+            <h3 data-variation-title>A room after midnight</h3>
+            <div class="variant-tempo"><span>Tempo</span><strong data-variation-tempo>64 BPM</strong></div>
+            <p class="variant-description" data-variation-description>Close-spaced chords and a tender, slightly unsettled upper line.</p>
+            <div class="variant-actions">
+              <button class="btn btn-small" type="button" data-mood-action="preview" data-variation-index="1">Preview</button>
+              <button class="btn btn-small btn-apply" type="button" data-mood-action="apply" data-variation-index="1">Apply to cue</button>
+            </div>
+          </article>
+          <article class="mood-variant" data-variation-index="2">
+            <div class="variant-index">03 <span>STUDY</span></div>
+            <h3 data-variation-title>First light, quietly</h3>
+            <div class="variant-tempo"><span>Tempo</span><strong data-variation-tempo>60 BPM</strong></div>
+            <p class="variant-description" data-variation-description>A gentle lift in the final phrase, with the harmony settling without hurry.</p>
+            <div class="variant-actions">
+              <button class="btn btn-small" type="button" data-mood-action="preview" data-variation-index="2">Preview</button>
+              <button class="btn btn-small btn-apply" type="button" data-mood-action="apply" data-variation-index="2">Apply to cue</button>
+            </div>
+          </article>
+        </div>
+      </section>
+      <div class="main-grid">
+        <div class="workspace">
+          <section class="panel roll-panel" aria-labelledby="rollTitle">
+            <div class="panel-head">
+              <div><div class="eyebrow">One event array · every view</div><h2 class="panel-title" id="rollTitle">Piano roll</h2></div>
+              <div class="roll-head-actions">
+                <button class="btn btn-small" id="undoButton" type="button" aria-label="Undo">↶ Undo</button>
+                <button class="btn btn-small" id="redoButton" type="button" aria-label="Redo">↷ Redo</button>
+                <button class="btn btn-small" id="addNoteButton" type="button">＋ Note</button>
+              </div>
+            </div>
+            <div class="roll-viewport"><canvas id="pianoRoll" tabindex="0" role="application" aria-label="Interactive piano roll. Use arrow keys to move the selected note; delete removes it; plus adds a note."></canvas></div>
+            <div class="roll-footer">
+              <div class="legend"><span><i class="swatch" style="background:#829b9d"></i>Bass</span><span><i class="swatch" style="background:#c69863"></i>Harmony</span><span><i class="swatch" style="background:#c77e73"></i>Melody</span></div>
+              <div class="hint">Double-click to add · drag note to move · drag its right edge to resize · Delete to remove</div>
+            </div>
+          </section>
+          <div class="lower-grid">
+            <section class="panel lesson-panel" aria-labelledby="lessonTitle">
+              <div class="section-head"><div><div class="eyebrow" id="lessonStep">LESSON 01 / 07</div><h2 id="lessonTitle">Read the piano roll</h2></div><button class="btn btn-small btn-primary" id="lessonListen" type="button">Listen to this idea</button></div>
+              <div class="lesson-nav" id="lessonNav" aria-label="Lesson path"></div>
+              <p class="lesson-copy" id="lessonExplanation"></p>
+              <div class="lesson-action"><b>Try it in FL Studio</b><br><span id="lessonAction"></span></div>
+              <div class="control-group"><label class="toggle" style="color:var(--muted)"><input id="compareToggle" type="checkbox"> <span id="compareLabel">Compare with a shorter note</span></label><button class="btn btn-small" id="compareListen" type="button">Listen to comparison</button></div>
+              <p class="listening-question" id="lessonQuestion"></p>
+            </section>
+            <section class="panel editor-panel" aria-labelledby="editorTitle">
+              <div class="section-head"><div><div class="eyebrow">Exact event editor</div><h2 id="editorTitle">Selected note</h2></div></div>
+              <div class="active-note" id="selectedNoteSummary" aria-live="polite">Select a note in the roll or event table to inspect its exact values.</div>
+              <form id="noteForm" class="editor-form">
+                <div class="field"><label for="notePitch">Pitch label</label><input id="notePitch" autocomplete="off" placeholder="C5 / Eb4"></div>
+                <div class="field"><label for="noteMidi">MIDI</label><input id="noteMidi" type="number" min="0" max="127" required></div>
+                <div class="field"><label for="noteLayer">Layer</label><select id="noteLayer"><option value="chord">Harmony</option><option value="melody">Melody</option><option value="bass">Bass</option></select></div>
+                <div class="field"><label for="noteBar">Bar</label><input id="noteBar" type="number" min="1" step="1" required></div>
+                <div class="field"><label for="noteBeat">Beat</label><input id="noteBeat" type="number" min="1" max="4" step=".25" required></div>
+                <div class="field"><label for="noteDuration">Duration · beats</label><input id="noteDuration" type="number" min=".25" step=".25" required></div>
+                <div class="field"><label for="noteVelocity">Velocity</label><input id="noteVelocity" type="number" min="1" max="127" required></div>
+                <div class="editor-actions full-span"><button class="btn btn-primary btn-small" type="submit">Apply note values</button><button class="btn btn-small" id="deleteNoteButton" type="button">Delete selected</button></div>
+              </form>
+              <p class="tiny-copy" style="margin:11px 0 0">Pitch labels are display conventions only. The MIDI number determines the sound.</p>
+            </section>
+          </div>
+        </div>
+        <aside class="side-column" aria-label="Composition details">
+          <section class="panel side-card"><h3>Session readout</h3><p>A clear map from the piano roll to your DAW.</p><div class="readout"><span>Selected note</span><span id="readoutNote">—</span><span>Position</span><span id="readoutPosition">—</span><span>Duration</span><span id="readoutDuration">—</span><span>Current color</span><span id="readoutHarmony">Cm(add9)</span><span>Loop length</span><span id="readoutLength">32 beats</span><span>Est. time</span><span id="readoutTime">31.0 sec</span><span>Analysis</span><span id="analysisStatus">Preset harmony</span></div><div class="active-note" id="flInstruction">Select a note for its exact FL Studio placement instruction.</div></section>
+          <section class="panel side-card octave-card"><div class="eyebrow">Calibration</div><h3>Octave names shift;<br>the pitch does not.</h3><div class="calibration"><span>FL Studio<b>MIDI 60 · C5</b></span><span>Scientific<b>MIDI 60 · C4</b></span></div><p>Current label: <span id="calibrationCurrent">C5</span>. This display choice never transposes a note or changes its export.</p></section>
+          <section class="panel side-card"><h3>Sound &amp; layers</h3><p>Soft additive piano-like tone, not a sampled acoustic piano. Effects stay out of your MIDI file.</p>
+            <div class="variant-row">
+              <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="bass" checked> Bass</label>
+              <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="chord" checked> Harmony</label>
+              <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="melody" checked> Melody</label>
+            </div>
+            <div class="variant-row" style="margin-top:12px">
+              <button class="btn btn-small" data-solo="bass" type="button">Bass only</button><button class="btn btn-small" data-solo="chord" type="button">Harmony only</button><button class="btn btn-small" data-solo="melody" type="button">Melody only</button><button class="btn btn-small" data-solo="all" type="button">All layers</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+      <section class="section-wrap">
+        <div class="section-title"><h2>Follow the listening path</h2><p>Seven small ideas; one cue that remains yours.</p></div>
+        <div class="lesson-library" id="lessonLibrary"></div>
+      </section>
+      <section class="section-wrap">
+        <div class="section-title"><h2>Events &amp; take-home files</h2><p>Every export is made from the notes currently shown above.</p></div>
+        <div class="lower-grid">
+          <section class="panel lesson-panel">
+            <div class="section-head"><div><div class="eyebrow">Companion table</div><h2>Exact event list</h2><p>Start positions use zero-based quarter-note beats behind the scenes.</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Layer</th><th>Pitch</th><th>MIDI</th><th>Bar / beat</th><th>Start beat</th><th>Length</th><th>Vel.</th></tr></thead><tbody id="eventRows"></tbody></table></div>
+          </section>
+          <div class="panel tools-panel">
+            <section class="tool-block"><div class="eyebrow">Export</div><h3>Carry the cue out</h3><p>Standard MIDI format 1, 480 PPQ; project JSON preserves every event and session choice.</p><div class="tool-actions"><button class="btn btn-primary btn-small" id="midiExport" type="button">Download MIDI</button><button class="btn btn-small" id="jsonExport" type="button">Save project JSON</button><button class="btn btn-small" id="csvExport" type="button">Download CSV</button><button class="btn btn-small" id="printButton" type="button">Print lesson view</button><button class="btn btn-small" id="zipExport" type="button">Download offline ZIP</button><label class="btn btn-small" for="jsonImport" tabindex="0">Open project JSON</label><input id="jsonImport" class="hidden" type="file" accept=".json,application/json"></div><p class="tiny-copy" style="margin-top:9px">MIDI layers: <select id="midiLayerChoice" aria-label="MIDI export layer selection"><option value="all">All layers (including muted)</option><option value="audible">Audible layers only</option></select></p><div class="status-line" id="exportStatus" aria-live="polite"></div></section>
+           <section class="tool-block"><div class="eyebrow">Explore the color</div><h3>Small, rule-led changes</h3><p>Keep the phrase recognizable while changing its landing.</p><div class="tool-actions"><button class="btn btn-small" id="randomSeedButton" type="button">Regenerate from seed</button><button class="btn btn-small" id="pedalVariant" type="button">Held tonic bass</button><button class="btn btn-small" id="dyadVariant" type="button">Paired dyad study</button><button class="btn btn-small" id="bassReattack" type="button">Reattack bass every 8 beats</button></div></section>
+          </div>
+        </div>
+      </section>
+      <section class="section-wrap">
+        <div class="section-title"><h2>Check the instrument</h2><p>Diagnostics describe the implementation honestly; a spec inconsistency is not hidden.</p></div>
+        <section class="panel diagnostics"><h3>Diagnostics</h3><div id="diagnosticList" class="diagnostic-list"></div><div class="status-line" id="diagnosticSummary" aria-live="polite"></div></section>
+      </section>
+      <footer class="section-wrap hint">Beautiful Unease is an original learning instrument. It does not reproduce any named artist's compositions. For FL Studio, export MIDI and drag the file into the piano roll; use the event table when placing or shaping notes by hand.</footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

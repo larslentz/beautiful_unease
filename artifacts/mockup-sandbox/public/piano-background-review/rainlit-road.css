@@ -1,0 +1,45 @@
+/* Cool rain-glass atmosphere behind the extracted, unchanged composition lab. */
+html {
+  min-height: 100%;
+  background: #dce2df;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #dce2df;
+  background-image:
+    /* A low, far-off horizon: muted, nearly swallowed by rain. */
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(43vh - 1px),
+      rgba(50, 69, 69, 0.10) 43vh,
+      rgba(70, 85, 82, 0.065) calc(43vh + 3px),
+      transparent calc(43vh + 34px)
+    ),
+    /* Sparse amber glints sit below that line, like light caught on wet glass. */
+    radial-gradient(ellipse 18rem 4rem at 24% 48%, rgba(181, 142, 91, 0.12), transparent 72%),
+    radial-gradient(ellipse 13rem 3rem at 77% 53%, rgba(167, 124, 79, 0.09), transparent 74%),
+    radial-gradient(ellipse 29rem 7rem at 51% 100%, rgba(176, 143, 101, 0.085), transparent 75%),
+    /* Fine, irregular rain streaks; low contrast and almost vertical. */
+    repeating-linear-gradient(
+      102deg,
+      transparent 0,
+      transparent 13px,
+      rgba(56, 77, 78, 0.038) 13.4px,
+      rgba(56, 77, 78, 0.038) 13.9px,
+      transparent 14.4px,
+      transparent 25px
+    ),
+    repeating-linear-gradient(
+      96deg,
+      transparent 0,
+      transparent 31px,
+      rgba(244, 246, 239, 0.15) 31.3px,
+      transparent 32px,
+      transparent 54px
+    ),
+    /* Cool rainy-night haze, kept pale enough to sit quietly behind the UI. */
+    linear-gradient(180deg, #d8e0df 0%, #dfe5e1 36%, #d9e0dc 70%, #d4dcda 100%);
+  background-attachment: fixed;
+}
