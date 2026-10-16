@@ -18,14 +18,15 @@ array. FL Studio labels use MIDI 60 =
 C5; Scientific labels use MIDI 60 = C4. Changing label convention never
 changes a note's MIDI number.
 
-The mood studio offers three original palettes: Pacific Northwest dream
-mystery, wistful romance and gentle resolution. Each seed creates three
+The mood studio offers six original palettes: Pacific Northwest dream mystery,
+wistful romance, gentle resolution, Velvet noir, Ember pulse and Prismatic
+drift. Each seed creates three
 repeatable variations that change more than pitch transposition: harmony,
 melody shape or timing, bass movement and tempo can differ. Preview a variation
 without changing the current cue, or apply it; the piano roll, event table,
 project JSON and MIDI then use the applied event array. Apply supports undo and
-redo. The mystery palette uses broad late-night lounge and suspense traits; it
-does not reproduce any show's theme or soundtrack.
+redo. The palettes use original musical traits and do not reproduce any show's
+theme or soundtrack.
 
 Edit with the mouse, keyboard, event table or numeric editor. Drag a note to
 change pitch/start, drag its right edge to change duration, double-click empty

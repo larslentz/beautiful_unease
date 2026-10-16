@@ -135,6 +135,36 @@
         {name:"Coming home",tempo:5,harmony:"ninth",melody:"delayed",bass:"roots",description:"A gentle major ninth and a delayed phrase bring warmth without rushing."},
         {name:"First light",tempo:7,harmony:"open",melody:"passing",bass:"roots",description:"The bass anchors a more direct melody with a clear final contour."}
       ]
+    },
+    "velvet-noir": {
+      name:"Velvet noir",
+      summary:"Smoky altered color, low anchors, and a melody that leaves space for tension.",
+      scale:[0,2,3,5,6,8,9,10], toneId:"warm",
+      variants:[
+        {name:"Smoke line",tempo:-4,harmony:"chromatic",melody:"delayed",bass:"pedal",description:"A steady low note and a half-step inner voice keep the harmony shadowed."},
+        {name:"Streetlamp",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A dark added ninth hangs over a careful, descending bass."},
+        {name:"Last glass",tempo:1,harmony:"open",melody:"passing",bass:"stepwise",description:"Wider voicings open briefly before the melody slips away."}
+      ]
+    },
+    "ember-pulse": {
+      name:"Ember pulse",
+      summary:"A forward-moving modal color, a steady bass foundation, and a melody with lift.",
+      scale:[0,2,4,5,7,9,10], toneId:"piano",
+      variants:[
+        {name:"Kindling",tempo:4,harmony:"major",melody:"rising",bass:"roots",description:"A firmer pulse and rising contour give the phrase forward motion."},
+        {name:"Heartbeat",tempo:6,harmony:"ninth",melody:"passing",bass:"roots",description:"A bright ninth and small answering notes keep the cue in motion."},
+        {name:"Coal glow",tempo:2,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"The energy softens into a measured bass walk and a late reply."}
+      ]
+    },
+    "prismatic-drift": {
+      name:"Prismatic drift",
+      summary:"Airy raised-fourth color, luminous voicings, and a gently floating melody.",
+      scale:[0,2,4,6,7,9,11], toneId:"clear",
+      variants:[
+        {name:"Glass halo",tempo:1,harmony:"open",melody:"rising",bass:"roots",description:"Open intervals and a rising line catch a bright, suspended color."},
+        {name:"Soft refraction",tempo:3,harmony:"ninth",melody:"delayed",bass:"roots",description:"A major ninth lets the melody hover just above the harmony."},
+        {name:"Split light",tempo:2,harmony:"major",melody:"passing",bass:"stepwise",description:"A small passing answer moves through the luminous chord tones."}
+      ]
     }
   };
   const MOOD_TONES = {
@@ -330,7 +360,11 @@
     events.forEach(event=>{const key=event.layer+":"+event.midi;if(!byPitch.has(key))byPitch.set(key,[]);byPitch.get(key).push(event);});
     for(const notes of byPitch.values()){
       notes.sort((a,b)=>a.startBeat-b.startBeat);
-      for(let i=1;i<notes.length;i++)if(notes[i-1].startBeat+notes[i-1].durationBeats>notes[i].startBeat)return "Two generated notes overlap on the same MIDI track.";
+      for(let i=1;i<notes.length;i++){
+        const previous=notes[i-1],current=notes[i];
+        if(previous.startBeat+previous.durationBeats>current.startBeat)
+          return `Two generated ${current.layer} notes at ${pitchLabel(current.midi)} overlap (events ${previous.id} and ${current.id}).`;
+      }
     }
     return "";
   }
@@ -673,7 +707,7 @@
     rows.push(addDiagnostic("Additional starting moods",additionalPresetsValid,"Blue hour mystery, Windowlight and Tidepool reflections are selectable, unique and valid eight-bar cues."));
     rows.push(addDiagnostic("Loop duration",Math.abs(32*60/62-31.0)<.1,"A 32-beat loop at 62 BPM lasts 31.0 seconds."));
     const paletteCount=Object.keys(MOOD_PALETTES).length;
-    rows.push(addDiagnostic("Three original mood palettes",paletteCount===3&&Object.values(MOOD_PALETTES).every(p=>p.variants.length===3),"Each palette has three named alternatives; generated music uses local synthesis and does not copy a soundtrack."));
+    rows.push(addDiagnostic("Six original mood palettes",paletteCount===6&&Object.values(MOOD_PALETTES).every(p=>p.variants.length===3),"Each palette has three named alternatives; generated music uses local synthesis and does not copy a soundtrack."));
     try{
       const generated=Object.keys(MOOD_PALETTES).map(moodId=>createMoodCandidates(rom,moodId,1791,62,8,0));
       const repeated=Object.keys(MOOD_PALETTES).map(moodId=>createMoodCandidates(rom,moodId,1791,62,8,0));
@@ -682,7 +716,7 @@
       const valid=generated.every(set=>set.length===3&&set.every(c=>!moodCandidateError(c.events,32)));
       const dyadSet=createMoodCandidates(dyads,"pnw-mystery",1791,62,4,0);
       const dyadLayers=dyadSet.every(c=>c.events.some(e=>e.layer==="melody")&&c.events.some(e=>e.layer==="bass"));
-      rows.push(addDiagnostic("Seeded mood variation checks",repeatable&&distinct&&valid&&dyadLayers,"Same seed repeats exactly; all nine outputs are distinct and valid, and dyads gain melody and bass."));
+      rows.push(addDiagnostic("Seeded mood variation checks",repeatable&&distinct&&valid&&dyadLayers,"Same seed repeats exactly; each palette has three distinct, valid outputs, and dyads gain melody and bass."));
     }catch(error){rows.push(addDiagnostic("Seeded mood variation checks",false,error.message));}
     try {
       const result=inspectMidi(createMidi());
