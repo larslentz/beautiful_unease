@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
-    "build": "vite build --config vite.config.ts && cp app.js README.txt AUDIO-SAMPLES-LICENSE.txt dist/public/",
+    "build": "node scripts/embed-piano-samples.mjs && vite build --config vite.config.ts && cp app.js piano-samples.js README.txt AUDIO-SAMPLES-LICENSE.txt dist/public/ && zip -q -r -FS beautiful-unease-piano-lab.zip index.html styles.css piano-samples.js app.js README.txt AUDIO-SAMPLES-LICENSE.txt fonts && cp beautiful-unease-piano-lab.zip public/ && cp beautiful-unease-piano-lab.zip dist/public/",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@audio-samples/piano-mp3-velocity1": "1.0.5",
+    "@audio-samples/piano-mp3-velocity16": "1.0.5",
+    "@audio-samples/piano-mp3-velocity8": "1.0.5",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.4",
     "@radix-ui/react-alert-dialog": "^1.1.7",

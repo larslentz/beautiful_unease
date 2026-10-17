@@ -182,7 +182,14 @@
   };
   let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0, playbackRequest=0;
   const appAssetBase=new URL(".",document.currentScript?.src||document.baseURI);
+  const pianoSampleData=window.PIANO_SAMPLE_DATA||{};
+  const pianoSampleLayers=[1,8,16];
   const pianoSampleNotes=Array.from({length:30},(_,index)=>21+index*3);
+  const pianoSampleNotesByLayer=new Map(pianoSampleLayers.map(layer=>[
+    layer,Object.keys(pianoSampleData[layer]||{}).length
+      ?Object.keys(pianoSampleData[layer]).map(Number).filter(Number.isFinite).sort((a,b)=>a-b)
+      :pianoSampleNotes
+  ]));
   const pianoSampleBuffers=new Map(), pianoSampleLoads=new Map();
   let moodCandidateSet=null;
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
@@ -722,6 +729,12 @@
       const dyadLayers=dyadSet.every(c=>c.events.some(e=>e.layer==="melody")&&c.events.some(e=>e.layer==="bass"));
       rows.push(addDiagnostic("Seeded mood variation checks",repeatable&&distinct&&valid&&dyadLayers,"Same seed repeats exactly; each palette has three distinct, valid outputs, and dyads gain melody and bass."));
     }catch(error){rows.push(addDiagnostic("Seeded mood variation checks",false,error.message));}
+    const velocityLayersValid=pianoSampleLayers.every(layer=>{
+      const notes=pianoSampleNotesByLayer.get(layer)||[];
+      return notes.length===30&&notes[0]===21&&notes[notes.length-1]===108;
+    });
+    rows.push(addDiagnostic("Piano velocity layer coverage",velocityLayersValid,"Soft v1, medium v8 and strong v16 each provide 30 pitch-matched samples."));
+    rows.push(addDiagnostic("Velocity selects piano tone",pianoSampleLayerFor(32)===1&&pianoSampleLayerFor(72)===8&&pianoSampleLayerFor(112)===16,"Soft, medium and forceful notes use distinct recorded sample layers as well as velocity-based volume."));
     try {
       const result=inspectMidi(createMidi());
        rows.push(addDiagnostic("Generated MIDI structure",true,`Current export parsed: format ${result.format}, ${result.trackCount} tracks, ${result.ppq} PPQ, tempo, 4/4 meter, pitch/duration/velocity, no sustain, note-off ordering and all ${result.ends.length} track ends verified.`));
@@ -731,7 +744,7 @@
     const jsonRoundTrip=JSON.stringify(copyEvents(JSON.parse(JSON.stringify(state.events))))===JSON.stringify(state.events);
     rows.push(addDiagnostic("Project JSON event round-trip",jsonRoundTrip,jsonRoundTrip?"All current event fields and values survive JSON serialization.":"A current event value did not survive JSON serialization."));
     list.replaceChildren(...rows);
-    $("diagnosticSummary").textContent="Live checks inspect embedded cues and the current browser implementation. Piano samples load from this site when playback starts.";
+    $("diagnosticSummary").textContent="Live checks inspect embedded cues and the current browser implementation. Piano samples use local velocity layers.";
   }
   function snap(value) { return Math.round(value/state.snap)*state.snap; }
   function findCanvasEvent(x,y) {
@@ -941,31 +954,41 @@
   $("playButton").addEventListener("click",()=>{if(state.isPlaying)pauseAudio();else playAudio(state.events);});
   $("stopButton").addEventListener("click",()=>stopAudio(true));
   $("loopToggle").addEventListener("change",()=>{if(state.isPlaying){const at=state.playhead,events=playbackEvents.slice(),options={tempo:playbackTempo,length:playbackLength,toneId:playbackToneId};stopAudio(false);playAudio(events,at,options);}});
-  function pianoSampleNoteFor(midi){
-    if(!pianoSampleNotes.length)throw new Error("The piano sample list is unavailable.");
-    return pianoSampleNotes.reduce((nearest,note)=>Math.abs(note-midi)<Math.abs(nearest-midi)?note:nearest,pianoSampleNotes[0]);
+  function pianoSampleNoteFor(midi,velocityLayer=8){
+    const notes=pianoSampleNotesByLayer.get(velocityLayer)||[];
+    if(!notes.length)throw new Error(`The piano velocity-${velocityLayer} sample list is unavailable.`);
+    return notes.reduce((nearest,note)=>Math.abs(note-midi)<Math.abs(nearest-midi)?note:nearest,notes[0]);
   }
-  function pianoSampleFileFor(midi){
+  function pianoSampleLayerFor(velocity){
+    if(velocity<48)return 1;
+    if(velocity<96)return 8;
+    return 16;
+  }
+  function pianoSampleFileFor(midi,velocityLayer){
     const names=["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"];
-    return `${names[midi%12]}${Math.floor(midi/12)-1}v8.mp3`;
+    return `${names[midi%12]}${Math.floor(midi/12)-1}v${velocityLayer}.mp3`;
   }
-  function loadPianoSample(sampleMidi){
-    if(pianoSampleBuffers.has(sampleMidi))return Promise.resolve(pianoSampleBuffers.get(sampleMidi));
-    if(!pianoSampleLoads.has(sampleMidi)){
-      const sampleUrl=new URL(`piano-samples/${pianoSampleFileFor(sampleMidi)}`,appAssetBase);
-      const load=fetch(sampleUrl).then(response=>{
-        if(!response.ok)throw new Error(`Piano sample request failed (${response.status}).`);
-        return response.arrayBuffer();
-      }).then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{
-        pianoSampleBuffers.set(sampleMidi,buffer);
+  function loadPianoSample(sampleMidi,velocityLayer){
+    const key=`${velocityLayer}:${sampleMidi}`;
+    if(pianoSampleBuffers.has(key))return Promise.resolve(pianoSampleBuffers.get(key));
+    if(!pianoSampleLoads.has(key)){
+      const encoded=pianoSampleData[velocityLayer]?.[sampleMidi];
+      const sampleBytes=encoded
+        ?Promise.resolve(Uint8Array.from(atob(encoded),character=>character.charCodeAt(0)).buffer)
+        :fetch(new URL(`piano-samples/${pianoSampleFileFor(sampleMidi,velocityLayer)}`,appAssetBase)).then(response=>{
+          if(!response.ok)throw new Error(`Piano sample request failed (${response.status}).`);
+          return response.arrayBuffer();
+        });
+      const load=sampleBytes.then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{
+        pianoSampleBuffers.set(key,buffer);
         return buffer;
       }).catch(error=>{
-        pianoSampleLoads.delete(sampleMidi);
-        throw new Error(`The online piano sample could not be prepared: ${error.message||error}`);
+        pianoSampleLoads.delete(key);
+        throw new Error(`The piano velocity-${velocityLayer} sample could not be prepared: ${error.message||error}`);
       });
-      pianoSampleLoads.set(sampleMidi,load);
+      pianoSampleLoads.set(key,load);
     }
-    return pianoSampleLoads.get(sampleMidi);
+    return pianoSampleLoads.get(key);
   }
   async function ensureAudio(events){
     if(!audio){
@@ -979,16 +1002,21 @@
       const master=audio.createGain();master.gain.value=.48;comp.connect(master);master.connect(audio.destination);
       audio.master=master;audio.compressor=comp;audio.delay=delay;audio.delayFeedback=feedback;audio.delayWet=wet;
     }
-    const sampleNotes=[...new Set(events.map(event=>pianoSampleNoteFor(event.midi)))];
-    if(sampleNotes.some(note=>!pianoSampleBuffers.has(note)))toast("Preparing the piano sound…");
+    const samples=[...new Map(events.map(event=>{
+      const velocityLayer=pianoSampleLayerFor(event.velocity);
+      const sampleMidi=pianoSampleNoteFor(event.midi,velocityLayer);
+      return [`${velocityLayer}:${sampleMidi}`,{sampleMidi,velocityLayer}];
+    })).values()];
+    if(samples.some(({sampleMidi,velocityLayer})=>!pianoSampleBuffers.has(`${velocityLayer}:${sampleMidi}`)))toast("Preparing the piano sound…");
     await audio.resume();
-    await Promise.all(sampleNotes.map(loadPianoSample));
+    await Promise.all(samples.map(({sampleMidi,velocityLayer})=>loadPianoSample(sampleMidi,velocityLayer)));
   }
   function scheduleTone(midi,velocity,when,duration){
     if(!audio||scheduledVoices.size>=24)return;
     const now=audio.currentTime, start=Math.max(when,now+.002);
-    const sampleMidi=pianoSampleNoteFor(midi),buffer=pianoSampleBuffers.get(sampleMidi);
-    if(!buffer)throw new Error(`Piano sample ${sampleMidi} was not prepared.`);
+    const velocityLayer=pianoSampleLayerFor(velocity);
+    const sampleMidi=pianoSampleNoteFor(midi,velocityLayer),buffer=pianoSampleBuffers.get(`${velocityLayer}:${sampleMidi}`);
+    if(!buffer)throw new Error(`Piano velocity-${velocityLayer} sample ${sampleMidi} was not prepared.`);
     const source=audio.createBufferSource(),gain=audio.createGain();
     source.buffer=buffer;
     source.playbackRate.setValueAtTime(Math.pow(2,(midi-sampleMidi)/12),start);

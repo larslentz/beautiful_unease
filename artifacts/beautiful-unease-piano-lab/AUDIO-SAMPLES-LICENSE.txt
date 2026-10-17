@@ -1,5 +1,5 @@
 Piano sample attribution
-========================
+------------------------
 
 The piano samples served from public/piano-samples are from Salamander Grand
 Piano V3 by Alexander Holm.
@@ -7,7 +7,13 @@ Piano V3 by Alexander Holm.
 Source: https://archive.org/details/SalamanderGrandPianoV3
 License: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
 License URL: https://creativecommons.org/licenses/by/3.0/
-Bundled from: @audio-samples/piano-mp3-velocity8@1.0.5
+Bundled from:
+  @audio-samples/piano-mp3-velocity1@1.0.5
+  @audio-samples/piano-mp3-velocity8@1.0.5
+  @audio-samples/piano-mp3-velocity16@1.0.5
 
-The MP3 samples are served from this app's own site and are loaded when playback
-starts. They are included unchanged from the package.
+The hosted app loads samples from its own site when playback starts. The
+downloaded ZIP also includes the samples embedded as Base64, so opening its
+index.html directly works offline without runtime network requests. The MP3
+samples are included unchanged from these packages. Each velocity layer
+contains the same 30 pitch-matched notes.
