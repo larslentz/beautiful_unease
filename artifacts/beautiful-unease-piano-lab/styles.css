@@ -48,9 +48,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 a { color: inherit; }
 .app-shell { min-height: 100vh; }
 .topbar { height: 74px; padding: 0 clamp(18px,4vw,64px); display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:rgba(250,247,240,.9); }
+.brand-lockup { display:flex; align-items:center; gap:20px; min-width:0; }
 .brand { display:flex; align-items:center; gap:13px; text-decoration:none; }
 .brand-mark { width:37px; height:37px; border:1px solid var(--rose); border-radius:50%; display:grid; place-items:center; color:var(--rose); font-family:var(--serif); font-size:21px; line-height:1; transform:rotate(-12deg); }
 .brand-name { font-family:var(--serif); font-size:17px; letter-spacing:.015em; }
+.creator-credit { display:flex; flex-direction:column; gap:2px; border-left:1px solid var(--line); padding-left:16px; line-height:1.15; }
+.creator-byline { color:var(--muted); font-size:9px; letter-spacing:.15em; }
+.creator-link { display:inline-flex; align-items:center; gap:4px; width:max-content; color:var(--deep-2); font-size:12px; font-weight:700; text-decoration-color:var(--ochre); text-underline-offset:3px; }
+.creator-link:hover { color:var(--rose); text-decoration-color:currentColor; }
 .top-meta { display:flex; gap:22px; align-items:center; color:var(--muted); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
 .top-meta b { color:var(--deep); font-weight:650; }
 .layout { max-width:1480px; padding:34px clamp(16px,4vw,62px) 70px; margin:auto; }
