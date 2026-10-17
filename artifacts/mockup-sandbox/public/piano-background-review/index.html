@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css">
   <script>
     (() => {
-      const variants = new Set(["misty-pine", "velvet-glow", "rainlit-road"]);
+      const variants = new Set(["misty-pine", "velvet-glow", "rainlit-road", "pine-velvet"]);
       const variant = new URLSearchParams(window.location.search).get("background");
       if (!variants.has(variant)) return;
       const stylesheet = document.createElement("link");
