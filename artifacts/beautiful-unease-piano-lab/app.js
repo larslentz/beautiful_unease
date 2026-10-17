@@ -168,10 +168,10 @@
     }
   };
   const MOOD_TONES = {
-    piano:{delaySeconds:.12,delayWet:.025,vibratoCents:0,vibratoHz:.22},
-    dream:{delaySeconds:.25,delayWet:.16,vibratoCents:5.5,vibratoHz:.24},
-    warm:{delaySeconds:.18,delayWet:.09,vibratoCents:2,vibratoHz:.18},
-    clear:{delaySeconds:.1,delayWet:.035,vibratoCents:0,vibratoHz:.2}
+    piano:{delaySeconds:.12,delayWet:.025},
+    dream:{delaySeconds:.25,delayWet:.16},
+    warm:{delaySeconds:.18,delayWet:.09},
+    clear:{delaySeconds:.1,delayWet:.035}
   };
   const state = {
     presetId:"romantic", events:[], totalBars:8, tempo:62, transpose:0, seed:1791,
@@ -180,7 +180,9 @@
     undo:[], redo:[], playhead:0, isPlaying:false, currentLesson:0, compare:false,
     analysisProvisional:false, reattack:false, arrangement:8, seekBeat:0, activeMood:null
   };
-  let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0;
+  let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0, playbackRequest=0;
+  const pianoSampleNotes=Object.keys(window.PIANO_SAMPLE_DATA||{}).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
+  const pianoSampleBuffers=new Map(), pianoSampleLoads=new Map();
   let moodCandidateSet=null;
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
   const beatWidth = () => state.zoom;
@@ -939,7 +941,28 @@
   $("playButton").addEventListener("click",()=>{if(state.isPlaying)pauseAudio();else playAudio(state.events);});
   $("stopButton").addEventListener("click",()=>stopAudio(true));
   $("loopToggle").addEventListener("change",()=>{if(state.isPlaying){const at=state.playhead,events=playbackEvents.slice(),options={tempo:playbackTempo,length:playbackLength,toneId:playbackToneId};stopAudio(false);playAudio(events,at,options);}});
-  function ensureAudio(){
+  function pianoSampleNoteFor(midi){
+    if(!pianoSampleNotes.length)throw new Error("The local piano sample data is missing.");
+    return pianoSampleNotes.reduce((nearest,note)=>Math.abs(note-midi)<Math.abs(nearest-midi)?note:nearest,pianoSampleNotes[0]);
+  }
+  function loadPianoSample(sampleMidi){
+    if(pianoSampleBuffers.has(sampleMidi))return Promise.resolve(pianoSampleBuffers.get(sampleMidi));
+    if(!pianoSampleLoads.has(sampleMidi)){
+      const encoded=window.PIANO_SAMPLE_DATA?.[sampleMidi];
+      if(!encoded)return Promise.reject(new Error(`Piano sample ${sampleMidi} is unavailable.`));
+      const bytes=Uint8Array.from(atob(encoded),character=>character.charCodeAt(0));
+      const load=audio.decodeAudioData(bytes.buffer).then(buffer=>{
+        pianoSampleBuffers.set(sampleMidi,buffer);
+        return buffer;
+      }).catch(error=>{
+        pianoSampleLoads.delete(sampleMidi);
+        throw new Error(`A local piano sample could not be decoded: ${error.message||error}`);
+      });
+      pianoSampleLoads.set(sampleMidi,load);
+    }
+    return pianoSampleLoads.get(sampleMidi);
+  }
+  async function ensureAudio(events){
     if(!audio){
       const AudioCtor=window.AudioContext||window.webkitAudioContext;
       if(!AudioCtor)throw new Error("Web Audio is unavailable in this browser.");
@@ -951,32 +974,38 @@
       const master=audio.createGain();master.gain.value=.48;comp.connect(master);master.connect(audio.destination);
       audio.master=master;audio.compressor=comp;audio.delay=delay;audio.delayFeedback=feedback;audio.delayWet=wet;
     }
-    return audio.resume();
+    const sampleNotes=[...new Set(events.map(event=>pianoSampleNoteFor(event.midi)))];
+    if(sampleNotes.some(note=>!pianoSampleBuffers.has(note)))toast("Preparing the piano sound…");
+    await audio.resume();
+    await Promise.all(sampleNotes.map(loadPianoSample));
   }
   function scheduleTone(midi,velocity,when,duration){
     if(!audio||scheduledVoices.size>=24)return;
     const now=audio.currentTime, start=Math.max(when,now+.002);
-    const fundamental=440*Math.pow(2,(midi-69)/12), gain=audio.createGain();
+    const sampleMidi=pianoSampleNoteFor(midi),buffer=pianoSampleBuffers.get(sampleMidi);
+    if(!buffer)throw new Error(`Piano sample ${sampleMidi} was not prepared.`);
+    const source=audio.createBufferSource(),gain=audio.createGain();
+    source.buffer=buffer;
+    source.playbackRate.setValueAtTime(Math.pow(2,(midi-sampleMidi)/12),start);
     gain.gain.setValueAtTime(.0001,start);
-    const peak=Math.min(.12,(velocity/127)*.12);
-    gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),start+.012);
-    gain.gain.exponentialRampToValueAtTime(.0001,start+Math.max(.13,duration));
+    const velocityLevel=Math.pow(Math.max(.05,velocity/127),1.55);
+    const peak=Math.min(.24,velocityLevel*.24);
+    const noteOff=start+Math.max(.08,duration),release=Math.min(.35,Math.max(.1,duration*.15));
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),start+.008);
+    gain.gain.setValueAtTime(Math.max(.0002,peak),noteOff);
+    gain.gain.exponentialRampToValueAtTime(.0001,noteOff+release);
+    source.connect(gain);
     gain.connect(audio.compressor);gain.connect(audio.delay);
-    const partials=[1,2,3,4];const amps=[1,.35,.16,.07];const nodes=[];
-    const tone=MOOD_TONES[playbackToneId]||MOOD_TONES.piano;
-    const vibrato=audio.createOscillator(),vibratoDepth=audio.createGain();
-    vibrato.frequency.value=tone.vibratoHz;vibratoDepth.gain.value=tone.vibratoCents;vibrato.connect(vibratoDepth);
-    partials.forEach((partial,i)=>{
-      const osc=audio.createOscillator();const og=audio.createGain();osc.type="sine";osc.frequency.value=fundamental*partial;og.gain.value=amps[i];osc.connect(og);og.connect(gain);vibratoDepth.connect(osc.detune);osc.start(start);osc.stop(start+Math.max(.14,duration)+.04);nodes.push(osc,og);
-      osc.onended=()=>{try{osc.disconnect();og.disconnect();}catch(_){}};
-    });
-    vibrato.start(start);vibrato.stop(start+Math.max(.14,duration)+.05);vibrato.onended=()=>{try{vibrato.disconnect();vibratoDepth.disconnect();}catch(_){}};
-    scheduledVoices.add(gain);setTimeout(()=>scheduledVoices.delete(gain),(Math.max(0,start-now)+duration+.1)*1000);
+    const voice={source,gain};scheduledVoices.add(voice);
+    source.onended=()=>{try{source.disconnect();gain.disconnect();}catch(_){}scheduledVoices.delete(voice);};
+    source.start(start);source.stop(noteOff+release+.025);
   }
   function playAudio(events,offset=null,options={}){
     if(state.isPlaying){stopAudio(false);}
-    ensureAudio().then(()=>{
-      playbackEvents=events.slice();playbackTempo=options.tempo||state.tempo;playbackLength=options.length||totalBeats();
+    const request=++playbackRequest,eventsToPlay=events.slice();
+    ensureAudio(eventsToPlay).then(()=>{
+      if(request!==playbackRequest)return;
+      playbackEvents=eventsToPlay;playbackTempo=options.tempo||state.tempo;playbackLength=options.length||totalBeats();
       playbackToneId=options.toneId||(activeMoodDetails()?.palette.toneId||"piano");
       const tone=MOOD_TONES[playbackToneId]||MOOD_TONES.piano,now=audio.currentTime;
       audio.delay.delayTime.setTargetAtTime(tone.delaySeconds,now,.04);audio.delayWet.gain.setTargetAtTime(tone.delayWet,now,.05);
@@ -1007,16 +1036,20 @@
         if(!loop&&beatNow>=len){stopAudio();return;}
       }
       scheduleWindow();scheduler=setInterval(scheduleWindow,35);updatePlayState();
-    }).catch(err=>{toast(err.message||"Audio could not start. Use a browser that supports Web Audio.",true);});
+    }).catch(err=>{
+      if(request!==playbackRequest)return;
+      state.isPlaying=false;updatePlayState();
+      toast(err.message||"The sampled piano could not start in this browser.",true);
+    });
   }
   function pauseAudio(){
     if(audio&&state.isPlaying)state.seekBeat=((audio.currentTime-playbackStart)*playbackTempo/60)%playbackLength;
     stopAudio(false);
   }
   function stopAudio(resetPosition=true){
-    state.isPlaying=false;if(scheduler){clearInterval(scheduler);scheduler=null;}
+    playbackRequest++;state.isPlaying=false;if(scheduler){clearInterval(scheduler);scheduler=null;}
     if(audio){const now=audio.currentTime;try{audio.master.gain.cancelScheduledValues(now);audio.master.gain.setTargetAtTime(.0001,now,.015);audio.delayWet.gain.setTargetAtTime(0,now,.01);setTimeout(()=>{if(audio)audio.master.gain.setTargetAtTime(.48,audio.currentTime,.08);},90);}catch(_){}}
-    scheduledVoices.forEach(node=>{try{node.gain.cancelScheduledValues(audio.currentTime);node.gain.setTargetAtTime(.0001,audio.currentTime,.01);}catch(_){}});
+    scheduledVoices.forEach(voice=>{try{voice.gain.gain.cancelScheduledValues(audio.currentTime);voice.gain.gain.setTargetAtTime(.0001,audio.currentTime,.01);voice.source.stop(audio.currentTime+.025);}catch(_){}});
     scheduledVoices.clear();scheduledEvents.clear();
     if(resetPosition)state.seekBeat=0;
     state.playhead=resetPosition?0:state.seekBeat;updatePlayState();renderRoll();

@@ -3,10 +3,11 @@ Piano Harmony & Melody Lab
 ==========================
 
 Open index.html directly in a current desktop browser. The project uses the
-four root files (index.html, styles.css, app.js and this README) plus the local
-fonts folder. It has no build step, npm runtime, network requests, remote fonts,
-samples, server, account, API or service worker. The same files are used by the
-preview host. Browser audio begins only after you press Listen.
+root files (index.html, styles.css, piano-samples.js, app.js, README.txt and
+AUDIO-SAMPLES-LICENSE.txt) plus the local fonts folder. It needs no server,
+account, API, runtime package installation, or network requests. Piano audio
+data is embedded locally, so the preview and extracted ZIP both work offline.
+Browser audio begins only after you press Listen.
 
 WHAT IS HERE
 ------------
@@ -35,10 +36,11 @@ one. Arrow keys move the selected note by a semitone or current snap amount.
 Undo and redo are available. A click on empty roll space sets the playhead
 position. The roll can scroll vertically and horizontally.
 
-The preview is a modest additive, piano-like synthesis, not a recording or
-sampled acoustic piano. Mood previews use local delay and subtle pitch
-modulation; these effects are generated in the browser and are not included in
-MIDI. Playback timing uses Web Audio scheduling. MIDI has
+The preview uses locally embedded Salamander Grand Piano V3 samples by
+Alexander Holm (CC BY 3.0), with velocity-sensitive volume, pitch-matched
+samples and natural piano decay. Mood previews use local delay; these effects
+are generated in the browser and are not included in MIDI. Playback timing
+uses Web Audio scheduling. MIDI has
 format 1, 480 PPQ, a conductor track and separate harmony, bass and melody
 tracks; program 0 is General MIDI Acoustic Grand Piano. Default export contains
 no sustain controller data. Choose whether MIDI includes every layer or only
@@ -49,8 +51,8 @@ Files available from the app:
   - Standard MIDI (.mid)
   - Project JSON (validated on open)
   - Human-readable event CSV
-  - beautiful-unease-piano-lab.zip (contains the four root files, bundled
-    Figtree and Space Mono fonts, and their SIL Open Font Licenses)
+  - beautiful-unease-piano-lab.zip (contains the app files, embedded piano
+    samples, bundled Figtree and Space Mono fonts, and attribution/licenses)
 
 SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 -------------------------------------

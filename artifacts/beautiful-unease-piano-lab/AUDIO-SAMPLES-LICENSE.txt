@@ -1,0 +1,15 @@
+Piano sample attribution
+========================
+
+The piano samples embedded in piano-samples.js are from Salamander Grand
+Piano V3 by Alexander Holm.
+
+Source: https://archive.org/details/SalamanderGrandPianoV3
+License: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+License URL: https://creativecommons.org/licenses/by/3.0/
+Bundled from: @audio-samples/piano-mp3-velocity8@1.0.5
+
+The samples are distributed in the app as local MP3 data so playback makes no
+runtime network requests and the downloaded ZIP works offline. The MP3 samples
+are included unchanged from the package and encoded as Base64 for local browser
+decoding.

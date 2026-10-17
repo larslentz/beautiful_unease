@@ -169,7 +169,7 @@
         <aside class="side-column" aria-label="Composition details">
           <section class="panel side-card"><h3>Session readout</h3><p>A clear map from the piano roll to your DAW.</p><div class="readout"><span>Selected note</span><span id="readoutNote">—</span><span>Position</span><span id="readoutPosition">—</span><span>Duration</span><span id="readoutDuration">—</span><span>Current color</span><span id="readoutHarmony">Cm(add9)</span><span>Loop length</span><span id="readoutLength">32 beats</span><span>Est. time</span><span id="readoutTime">31.0 sec</span><span>Analysis</span><span id="analysisStatus">Preset harmony</span></div><div class="active-note" id="flInstruction">Select a note for its exact FL Studio placement instruction.</div></section>
           <section class="panel side-card octave-card"><div class="eyebrow">Calibration</div><h3>Octave names shift;<br>the pitch does not.</h3><div class="calibration"><span>FL Studio<b>MIDI 60 · C5</b></span><span>Scientific<b>MIDI 60 · C4</b></span><span>Ableton Live<b>MIDI 60 · C3</b></span></div><p>Current label: <span id="calibrationCurrent">C5</span>. This display choice never transposes a note or changes its export.</p></section>
-          <section class="panel side-card"><h3>Sound &amp; layers</h3><p>Soft additive piano-like tone, not a sampled acoustic piano. Effects stay out of your MIDI file.</p>
+           <section class="panel side-card"><h3>Sound &amp; layers</h3><p>Sampled Salamander Grand Piano V3 by Alexander Holm (<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a>). Mood effects are playback-only and stay out of your MIDI file.</p>
             <div class="variant-row">
               <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="bass" checked> Bass</label>
               <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="chord" checked> Harmony</label>
@@ -206,6 +206,7 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="piano-samples.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
