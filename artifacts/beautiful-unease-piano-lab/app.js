@@ -190,19 +190,20 @@
   const displayedEvents = () => state.events;
   const copyEvents = (events) => events.map(e => ({...e}));
   const sortEvents = (events) => events.slice().sort((a,b)=>a.startBeat-b.startBeat || a.midi-b.midi || a.id.localeCompare(b.id));
+  const octaveOffset = (octaveMode) => octaveMode === "fl" ? 0 : octaveMode === "ableton" ? 2 : 1;
   function pitchLabel(midi, octaveMode = state.octave, flats = true) {
     const names = flats ? pitchNames : sharpNames;
-    const octave = Math.floor(midi/12) - (octaveMode === "fl" ? 0 : 1);
+    const octave = Math.floor(midi/12) - octaveOffset(octaveMode);
     return names[((midi%12)+12)%12] + octave;
   }
-  function midiFromLabel(label) {
+  function midiFromLabel(label, octaveMode = state.octave) {
     const match = String(label).trim().match(/^([A-Ga-g])([#b]?)(-?\d+)$/);
     if (!match) return null;
     const map = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
     let pc = map[match[1].toUpperCase()];
     if (match[2] === "#") pc++;
     if (match[2] === "b") pc--;
-    return (Number(match[3]) + (state.octave === "fl" ? 0 : 1))*12 + pc;
+    return (Number(match[3]) + octaveOffset(octaveMode))*12 + pc;
   }
   function eventBarBeat(e) { return { bar:Math.floor(e.startBeat/4)+1, beat:(e.startBeat%4)+1 }; }
   function exactClone() { return copyEvents(PRESETS[state.presetId].events); }
@@ -689,7 +690,7 @@
   function renderDiagnostics() {
     const list=$("diagnosticList"), rows=[];
     const rom=PRESETS.romantic.events, dyads=PRESETS.dyads.events;
-    rows.push(addDiagnostic("Octave convention",pitchLabel(60,"fl")==="C5"&&pitchLabel(60,"scientific")==="C4","MIDI 60 labels C5 in FL mode and C4 in scientific mode; pitch remains 60."));
+    rows.push(addDiagnostic("Octave convention",pitchLabel(60,"fl")==="C5"&&pitchLabel(60,"scientific")==="C4"&&pitchLabel(60,"ableton")==="C3"&&midiFromLabel("C5","fl")===60&&midiFromLabel("C4","scientific")===60&&midiFromLabel("C3","ableton")===60,"MIDI 60 labels C5 in FL Studio, C4 in scientific notation and C3 in Ableton Live; the pitch remains 60."));
     rows.push(addDiagnostic("Calibration pitches",pitchLabel(51)==="Eb4"&&pitchLabel(36)==="C3","Eb4 is MIDI 51 and C3 is MIDI 36 in the FL Studio convention."));
     rows.push(addDiagnostic("Preset 1 opening",rom.some(e=>e.layer==="bass"&&e.startBeat===0&&e.durationBeats===8),"First listed C-minor chord starts at tick 0 and lasts 3,840 ticks."));
     rows.push(addDiagnostic("Bar 3 begins",rom.some(e=>e.startBeat===8),"Beat 9 / bar 3 begins at tick 3,840."));
@@ -815,7 +816,7 @@
   });
   $("notePitch").addEventListener("change",()=>{
     const midi=midiFromLabel($("notePitch").value);
-    if(midi===null){toast("Enter a pitch such as C5, Eb4 or F#3.",true);return;}
+    if(midi===null){toast("Enter a pitch such as C5 (FL Studio), C4 (scientific) or C3 (Ableton Live).",true);return;}
     $("noteMidi").value=midi;
   });
   $("undoButton").addEventListener("click",()=>{if(!state.undo.length)return;state.redo.push(historySnapshot());restoreHistorySnapshot(state.undo.pop());renderAll();});
@@ -1115,7 +1116,7 @@
           importedMood={moodId:mood.moodId,variantIndex:mood.variantIndex,seed:mood.seed};
         }
         remember();state.events=copyEvents(data.events);state.tempo=data.tempo;state.totalBars=data.totalBars;state.arrangement=data.arrangementBars||data.totalBars;
-        state.presetId=data.presetId;state.seed=importedSeed;state.activeMood=importedMood;state.octave=data.octaveConvention==="scientific"?"scientific":"fl";state.transpose=Number(data.transpose)||0;state.ending=data.ending||"original";state.analysisProvisional=true;moodCandidateSet=null;
+        state.presetId=data.presetId;state.seed=importedSeed;state.activeMood=importedMood;state.octave=["scientific","ableton"].includes(data.octaveConvention)?data.octaveConvention:"fl";state.transpose=Number(data.transpose)||0;state.ending=data.ending||"original";state.analysisProvisional=true;moodCandidateSet=null;
         $("presetSelect").value=state.presetId;$("tempoInput").value=state.tempo;$("transposeInput").value=state.transpose;$("octaveMode").value=state.octave;$("seedInput").value=state.seed;
         renderAll();setStatus("Project loaded. Imported events are the active source of truth.");toast("Project loaded and validated.");
       }catch(err){setStatus("Import failed: "+err.message,true);toast("Import failed: "+err.message,true);}
