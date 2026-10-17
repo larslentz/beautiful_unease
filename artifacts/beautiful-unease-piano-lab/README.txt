@@ -2,12 +2,10 @@ BEAUTIFUL UNEASE
 Piano Harmony & Melody Lab
 ==========================
 
-Open index.html directly in a current desktop browser. The project uses the
-root files (index.html, styles.css, piano-samples.js, app.js, README.txt and
-AUDIO-SAMPLES-LICENSE.txt) plus the local fonts folder. It needs no server,
-account, API, runtime package installation, or network requests. Piano audio
-data is embedded locally, so the preview and extracted ZIP both work offline.
-Browser audio begins only after you press Listen.
+This is an online browser app. The hosted page loads piano samples from its own
+site when you press Listen; no third-party audio service or account is used.
+The sample files are in public/piano-samples and are deployed with the app.
+Browser audio requires Web Audio and MP3 decoding support.
 
 WHAT IS HERE
 ------------
@@ -36,11 +34,12 @@ one. Arrow keys move the selected note by a semitone or current snap amount.
 Undo and redo are available. A click on empty roll space sets the playhead
 position. The roll can scroll vertically and horizontally.
 
-The preview uses locally embedded Salamander Grand Piano V3 samples by
-Alexander Holm (CC BY 3.0), with velocity-sensitive volume, pitch-matched
-samples and natural piano decay. Mood previews use local delay; these effects
-are generated in the browser and are not included in MIDI. Playback timing
-uses Web Audio scheduling. MIDI has
+The preview uses Salamander Grand Piano V3 samples by Alexander Holm
+(CC BY 3.0), with velocity-sensitive volume, pitch-matched samples and natural
+piano decay. The samples load from this site's own static files when playback
+starts. Mood previews use local delay; these effects are generated in the
+browser and are not included in MIDI. Playback timing uses Web Audio
+scheduling. MIDI has
 format 1, 480 PPQ, a conductor track and separate harmony, bass and melody
 tracks; program 0 is General MIDI Acoustic Grand Piano. Default export contains
 no sustain controller data. Choose whether MIDI includes every layer or only
@@ -51,12 +50,10 @@ Files available from the app:
   - Standard MIDI (.mid)
   - Project JSON (validated on open)
   - Human-readable event CSV
-  - beautiful-unease-piano-lab.zip (contains the app files, embedded piano
-    samples, bundled Figtree and Space Mono fonts, and attribution/licenses)
 
 SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 -------------------------------------
-1. Open the project from a freshly extracted folder with networking disabled.
+1. Open the hosted app in a current desktop browser.
 2. Check the octave labels: MIDI 60 is C5 in FL Studio mode and C4 in
    Scientific mode. Check that the MIDI number and sound do not change.
 3. Compare MIDI 51 = Eb4, MIDI 36 = C3; set transpose +2 and inspect event
@@ -89,11 +86,9 @@ SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 
 LIMITATIONS / HONEST STATUS
 ---------------------------
-The local file:// browser acceptance checklist has not been run in this
-environment. The in-app Diagnostics panel reports embedded-data checks and
-explicitly marks unperformed browser acceptance checks as not run; do not read
-that item as a pass. Browser audio support and download behavior vary by
-browser and must be checked in the target browser. The original Romantic
+The app requires an internet connection to load and retrieve same-site piano
+samples. Browser audio support and download behavior vary by browser and must
+be checked in the target browser. The original Romantic
 specification has an arithmetic inconsistency: exact harmony note entries sum
 to 23 although one acceptance count says 24.
 

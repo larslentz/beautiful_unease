@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Beautiful Unease — Piano Harmony &amp; Melody Lab</title>
-  <meta name="description" content="A self-contained piano composition lab for learning romantic, melancholic harmony and melody, with exact MIDI-ready events and offline tools.">
+  <meta name="description" content="An online piano composition lab for learning romantic, melancholic harmony and melody, with exact MIDI-ready events and sampled piano playback.">
   <meta name="theme-color" content="#f1ede4">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
@@ -169,7 +169,7 @@
         <aside class="side-column" aria-label="Composition details">
           <section class="panel side-card"><h3>Session readout</h3><p>A clear map from the piano roll to your DAW.</p><div class="readout"><span>Selected note</span><span id="readoutNote">—</span><span>Position</span><span id="readoutPosition">—</span><span>Duration</span><span id="readoutDuration">—</span><span>Current color</span><span id="readoutHarmony">Cm(add9)</span><span>Loop length</span><span id="readoutLength">32 beats</span><span>Est. time</span><span id="readoutTime">31.0 sec</span><span>Analysis</span><span id="analysisStatus">Preset harmony</span></div><div class="active-note" id="flInstruction">Select a note for its exact FL Studio placement instruction.</div></section>
           <section class="panel side-card octave-card"><div class="eyebrow">Calibration</div><h3>Octave names shift;<br>the pitch does not.</h3><div class="calibration"><span>FL Studio<b>MIDI 60 · C5</b></span><span>Scientific<b>MIDI 60 · C4</b></span><span>Ableton Live<b>MIDI 60 · C3</b></span></div><p>Current label: <span id="calibrationCurrent">C5</span>. This display choice never transposes a note or changes its export.</p></section>
-           <section class="panel side-card"><h3>Sound &amp; layers</h3><p>Sampled Salamander Grand Piano V3 by Alexander Holm (<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a>). Mood effects are playback-only and stay out of your MIDI file.</p>
+           <section class="panel side-card"><h3>Sound &amp; layers</h3><p>Sampled <a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noopener noreferrer">Salamander Grand Piano V3</a> by Alexander Holm (<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a>). Mood effects are playback-only and stay out of your MIDI file.</p>
             <div class="variant-row">
               <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="bass" checked> Bass</label>
               <label class="toggle" style="color:var(--muted)"><input type="checkbox" data-layer="chord" checked> Harmony</label>
@@ -193,7 +193,7 @@
             <div class="table-wrap"><table><thead><tr><th>Layer</th><th>Pitch</th><th>MIDI</th><th>Bar / beat</th><th>Start beat</th><th>Length</th><th>Vel.</th></tr></thead><tbody id="eventRows"></tbody></table></div>
           </section>
           <div class="panel tools-panel">
-            <section class="tool-block"><div class="eyebrow">Export</div><h3>Carry the cue out</h3><p>Standard MIDI format 1, 480 PPQ; project JSON preserves every event and session choice.</p><div class="tool-actions"><button class="btn btn-primary btn-small" id="midiExport" type="button">Download MIDI</button><button class="btn btn-small" id="jsonExport" type="button">Save project JSON</button><button class="btn btn-small" id="csvExport" type="button">Download CSV</button><button class="btn btn-small" id="printButton" type="button">Print lesson view</button><button class="btn btn-small" id="zipExport" type="button">Download offline ZIP</button><label class="btn btn-small" for="jsonImport" tabindex="0">Open project JSON</label><input id="jsonImport" class="hidden" type="file" accept=".json,application/json"></div><p class="tiny-copy" style="margin-top:9px">MIDI layers: <select id="midiLayerChoice" aria-label="MIDI export layer selection"><option value="all">All layers (including muted)</option><option value="audible">Audible layers only</option></select></p><div class="status-line" id="exportStatus" aria-live="polite"></div></section>
+            <section class="tool-block"><div class="eyebrow">Export</div><h3>Carry the cue out</h3><p>Standard MIDI format 1, 480 PPQ; project JSON preserves every event and session choice.</p><div class="tool-actions"><button class="btn btn-primary btn-small" id="midiExport" type="button">Download MIDI</button><button class="btn btn-small" id="jsonExport" type="button">Save project JSON</button><button class="btn btn-small" id="csvExport" type="button">Download CSV</button><button class="btn btn-small" id="printButton" type="button">Print lesson view</button><label class="btn btn-small" for="jsonImport" tabindex="0">Open project JSON</label><input id="jsonImport" class="hidden" type="file" accept=".json,application/json"></div><p class="tiny-copy" style="margin-top:9px">MIDI layers: <select id="midiLayerChoice" aria-label="MIDI export layer selection"><option value="all">All layers (including muted)</option><option value="audible">Audible layers only</option></select></p><div class="status-line" id="exportStatus" aria-live="polite"></div></section>
            <section class="tool-block"><div class="eyebrow">Explore the color</div><h3>Small, rule-led changes</h3><p>Keep the phrase recognizable while changing its landing.</p><div class="tool-actions"><button class="btn btn-small" id="randomSeedButton" type="button">Regenerate from seed</button><button class="btn btn-small" id="pedalVariant" type="button">Held tonic bass</button><button class="btn btn-small" id="dyadVariant" type="button">Paired dyad study</button><button class="btn btn-small" id="bassReattack" type="button">Reattack bass every 8 beats</button></div></section>
           </div>
         </div>
@@ -206,7 +206,6 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="piano-samples.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

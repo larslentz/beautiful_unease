@@ -1,7 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Beautiful Unease: Piano Harmony & Melody Lab"
-description = "An offline-capable beginner piano composition lab for composing original romantic, melancholic, slightly unsettling cues, with exact FL Studio notes and timings, an editable piano roll, synthetic playback, MIDI and JSON export, and downloadable static project files."
+description = "An online beginner piano composition lab for composing original romantic, melancholic, slightly unsettling cues, with exact FL Studio notes and timings, an editable piano roll, sampled piano playback, MIDI and JSON export."
 version = "1.0.0"
 id = "artifacts/beautiful-unease-piano-lab"
 router = "path"

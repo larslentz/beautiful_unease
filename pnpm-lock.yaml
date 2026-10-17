@@ -223,9 +223,6 @@ importers:
 
   artifacts/beautiful-unease-piano-lab:
     devDependencies:
-      '@audio-samples/piano-mp3-velocity8':
-        specifier: 1.0.5
-        version: 1.0.5
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.87.0(react@19.1.0))
@@ -652,9 +649,6 @@ importers:
         version: 4.23.13
 
 packages:
-
-  '@audio-samples/piano-mp3-velocity8@1.0.5':
-    resolution: {integrity: sha512-Dqraw6baZOPi0EYE8unF2oX2WViZHPgrDMBGl4ht298XYrAKD9YqPC2QDJpwsH6KccZxW2KpxuQ0/ccMzBptmw==}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -3121,8 +3115,6 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
-
-  '@audio-samples/piano-mp3-velocity8@1.0.5': {}
 
   '@babel/code-frame@7.29.7':
     dependencies:

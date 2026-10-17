@@ -181,7 +181,8 @@
     analysisProvisional:false, reattack:false, arrangement:8, seekBeat:0, activeMood:null
   };
   let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0, playbackRequest=0;
-  const pianoSampleNotes=Object.keys(window.PIANO_SAMPLE_DATA||{}).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
+  const appAssetBase=new URL(".",document.currentScript?.src||document.baseURI);
+  const pianoSampleNotes=Array.from({length:30},(_,index)=>21+index*3);
   const pianoSampleBuffers=new Map(), pianoSampleLoads=new Map();
   let moodCandidateSet=null;
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
@@ -729,9 +730,8 @@
     }
     const jsonRoundTrip=JSON.stringify(copyEvents(JSON.parse(JSON.stringify(state.events))))===JSON.stringify(state.events);
     rows.push(addDiagnostic("Project JSON event round-trip",jsonRoundTrip,jsonRoundTrip?"All current event fields and values survive JSON serialization.":"A current event value did not survive JSON serialization."));
-    rows.push(addDiagnostic("Browser / offline acceptance suite",false,"This environment has not run the local file:// browser checklist. Use README manual checks; do not treat this as a passed test.",true));
     list.replaceChildren(...rows);
-    $("diagnosticSummary").textContent="Live checks inspect embedded data and the current browser implementation. File download, sound-device and fresh-folder checks still require manual verification.";
+    $("diagnosticSummary").textContent="Live checks inspect embedded cues and the current browser implementation. Piano samples load from this site when playback starts.";
   }
   function snap(value) { return Math.round(value/state.snap)*state.snap; }
   function findCanvasEvent(x,y) {
@@ -942,21 +942,26 @@
   $("stopButton").addEventListener("click",()=>stopAudio(true));
   $("loopToggle").addEventListener("change",()=>{if(state.isPlaying){const at=state.playhead,events=playbackEvents.slice(),options={tempo:playbackTempo,length:playbackLength,toneId:playbackToneId};stopAudio(false);playAudio(events,at,options);}});
   function pianoSampleNoteFor(midi){
-    if(!pianoSampleNotes.length)throw new Error("The local piano sample data is missing.");
+    if(!pianoSampleNotes.length)throw new Error("The piano sample list is unavailable.");
     return pianoSampleNotes.reduce((nearest,note)=>Math.abs(note-midi)<Math.abs(nearest-midi)?note:nearest,pianoSampleNotes[0]);
+  }
+  function pianoSampleFileFor(midi){
+    const names=["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"];
+    return `${names[midi%12]}${Math.floor(midi/12)-1}v8.mp3`;
   }
   function loadPianoSample(sampleMidi){
     if(pianoSampleBuffers.has(sampleMidi))return Promise.resolve(pianoSampleBuffers.get(sampleMidi));
     if(!pianoSampleLoads.has(sampleMidi)){
-      const encoded=window.PIANO_SAMPLE_DATA?.[sampleMidi];
-      if(!encoded)return Promise.reject(new Error(`Piano sample ${sampleMidi} is unavailable.`));
-      const bytes=Uint8Array.from(atob(encoded),character=>character.charCodeAt(0));
-      const load=audio.decodeAudioData(bytes.buffer).then(buffer=>{
+      const sampleUrl=new URL(`piano-samples/${pianoSampleFileFor(sampleMidi)}`,appAssetBase);
+      const load=fetch(sampleUrl).then(response=>{
+        if(!response.ok)throw new Error(`Piano sample request failed (${response.status}).`);
+        return response.arrayBuffer();
+      }).then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{
         pianoSampleBuffers.set(sampleMidi,buffer);
         return buffer;
       }).catch(error=>{
         pianoSampleLoads.delete(sampleMidi);
-        throw new Error(`A local piano sample could not be decoded: ${error.message||error}`);
+        throw new Error(`The online piano sample could not be prepared: ${error.message||error}`);
       });
       pianoSampleLoads.set(sampleMidi,load);
     }
@@ -1157,7 +1162,6 @@
     };
     reader.onerror=()=>{setStatus("Could not read this file.",true);};reader.readAsText(file);
   });
-  $("zipExport").addEventListener("click",()=>{window.location.href="./beautiful-unease-piano-lab.zip";setStatus("Opening the portable ZIP download.");});
   $("loopToggle").addEventListener("change",()=>{});
   window.addEventListener("resize",renderRoll);
   window.addEventListener("beforeunload",()=>{if(scheduler)clearInterval(scheduler);});
