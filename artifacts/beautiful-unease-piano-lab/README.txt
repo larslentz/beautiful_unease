@@ -2,10 +2,10 @@ BEAUTIFUL UNEASE
 Piano Harmony & Melody Lab
 --------------------------
 
-The hosted app loads piano samples from its own site when you press Listen; no
-third-party audio service or account is used. The downloaded ZIP includes
-embedded sample data and works offline when you open index.html directly.
-Browser audio requires Web Audio and MP3 decoding support.
+This is an online browser app. It loads the piano samples needed for the active
+cue from its own site when you press Listen; no third-party audio service or
+account is used. An internet connection is required. Browser audio requires Web
+Audio and MP3 decoding support.
 
 WHAT IS HERE
 ------------
@@ -38,11 +38,9 @@ The preview uses Salamander Grand Piano V3 samples by Alexander Holm
 (CC BY 3.0). Soft (v1), medium (v8) and strong (v16) notes use different
 recorded sample layers selected by MIDI velocity, in addition to
 velocity-sensitive volume, pitch-matched samples and natural piano decay.
-Hosted playback loads samples from this site's own static files; opening the
-downloaded ZIP's index.html directly uses embedded sample data and needs no
-network. Mood previews use local delay; these effects are generated in the
-browser and are not included in MIDI. Playback timing uses Web Audio
-scheduling. MIDI has
+Playback loads only the required samples from this site's own static files.
+Mood previews use local delay; these effects are generated in the browser and
+are not included in MIDI. Playback timing uses Web Audio scheduling. MIDI has
 format 1, 480 PPQ, a conductor track and separate harmony, bass and melody
 tracks; program 0 is General MIDI Acoustic Grand Piano. Default export contains
 no sustain controller data. Choose whether MIDI includes every layer or only
@@ -53,13 +51,10 @@ Files available from the app:
   - Standard MIDI (.mid)
   - Project JSON (validated on open)
   - Human-readable event CSV
-  - beautiful-unease-piano-lab.zip (offline copy with embedded samples and
-    bundled fonts and licenses)
 
 SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 -------------------------------------
-1. Open the hosted app in a current desktop browser. Then extract the offline
-   ZIP and open its index.html with networking disabled.
+1. Open the hosted app in a current desktop browser with an internet connection.
 2. Check the octave labels: MIDI 60 is C5 in FL Studio mode and C4 in
    Scientific mode. Check that the MIDI number and sound do not change.
 3. Compare MIDI 51 = Eb4, MIDI 36 = C3; set transpose +2 and inspect event
@@ -92,9 +87,9 @@ SUGGESTED MANUAL ACCEPTANCE CHECKLIST
 
 LIMITATIONS / HONEST STATUS
 ---------------------------
-Hosted playback loads samples from the app's own site. The downloaded ZIP uses
-embedded samples and works without a network connection. Browser audio support
-and download behavior vary by browser and must be checked in the target browser. The original Romantic
+The app needs an internet connection to load the hosted page and piano samples.
+Browser audio support and download behavior vary by browser and must be checked
+in the target browser. The original Romantic
 specification has an arithmetic inconsistency: exact harmony note entries sum
 to 23 although one acceptance count says 24.
 

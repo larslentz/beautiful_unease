@@ -12,8 +12,6 @@ Bundled from:
   @audio-samples/piano-mp3-velocity8@1.0.5
   @audio-samples/piano-mp3-velocity16@1.0.5
 
-The hosted app loads samples from its own site when playback starts. The
-downloaded ZIP also includes the samples embedded as Base64, so opening its
-index.html directly works offline without runtime network requests. The MP3
-samples are included unchanged from these packages. Each velocity layer
-contains the same 30 pitch-matched notes.
+The online app loads the required MP3 files from its own site when playback
+starts. The samples are included unchanged from these packages. Each velocity
+layer contains the same 30 pitch-matched notes.

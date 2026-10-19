@@ -182,14 +182,9 @@
   };
   let audio = null, scheduler = null, playbackStart = 0, playbackOffset = 0, playbackTempo=62, playbackLength=32, playbackEvents=[], playbackToneId="piano", scheduledVoices = new Set(), scheduledEvents = new Set(), toastTimer = 0, playbackRequest=0;
   const appAssetBase=new URL(".",document.currentScript?.src||document.baseURI);
-  const pianoSampleData=window.PIANO_SAMPLE_DATA||{};
   const pianoSampleLayers=[1,8,16];
   const pianoSampleNotes=Array.from({length:30},(_,index)=>21+index*3);
-  const pianoSampleNotesByLayer=new Map(pianoSampleLayers.map(layer=>[
-    layer,Object.keys(pianoSampleData[layer]||{}).length
-      ?Object.keys(pianoSampleData[layer]).map(Number).filter(Number.isFinite).sort((a,b)=>a-b)
-      :pianoSampleNotes
-  ]));
+  const pianoSampleNotesByLayer=new Map(pianoSampleLayers.map(layer=>[layer,pianoSampleNotes]));
   const pianoSampleBuffers=new Map(), pianoSampleLoads=new Map();
   let moodCandidateSet=null;
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
@@ -972,13 +967,11 @@
     const key=`${velocityLayer}:${sampleMidi}`;
     if(pianoSampleBuffers.has(key))return Promise.resolve(pianoSampleBuffers.get(key));
     if(!pianoSampleLoads.has(key)){
-      const encoded=pianoSampleData[velocityLayer]?.[sampleMidi];
-      const sampleBytes=encoded
-        ?Promise.resolve(Uint8Array.from(atob(encoded),character=>character.charCodeAt(0)).buffer)
-        :fetch(new URL(`piano-samples/${pianoSampleFileFor(sampleMidi,velocityLayer)}`,appAssetBase)).then(response=>{
-          if(!response.ok)throw new Error(`Piano sample request failed (${response.status}).`);
-          return response.arrayBuffer();
-        });
+      const sampleUrl=new URL(`piano-samples/${pianoSampleFileFor(sampleMidi,velocityLayer)}`,appAssetBase);
+      const sampleBytes=fetch(sampleUrl).then(response=>{
+        if(!response.ok)throw new Error(`Piano sample request failed (${response.status}).`);
+        return response.arrayBuffer();
+      });
       const load=sampleBytes.then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{
         pianoSampleBuffers.set(key,buffer);
         return buffer;
