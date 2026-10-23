@@ -238,6 +238,9 @@
     mode.addEventListener("change",()=>{uiKey="";redraw();});
     document.querySelectorAll("[data-learning-category]").forEach(n=>n.addEventListener("change",()=>{uiKey="";redraw();}));
     regionSelect.addEventListener("change",()=>{pinnedBeat=regionSelect.value===""?null:Number(regionSelect.value);chosenKey=null;notice="";uiKey="";redraw();if(pinnedBeat!==null)focusNotes(region()?.notes.map(n=>n.id)||[]);});
-    return {draw,selectedNote,bindLessons,show};
+    function followCue() {
+      pinnedBeat=null;chosenKey=null;notice="";uiKey="";
+    }
+    return {draw,selectedNote,bindLessons,show,followCue};
   };
 })();

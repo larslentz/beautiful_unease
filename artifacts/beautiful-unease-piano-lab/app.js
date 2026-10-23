@@ -512,7 +512,7 @@
   function currentHarmony() {
     if(state.analysisProvisional)return "Provisional";
     if(state.presetId==="dyads")return "Paired dyad (not a triad)";
-    const beat=state.isPlaying?state.playhead:(state.events.find(e=>e.id===state.selectedId)?.startBeat||0);
+    const beat=state.isPlaying?state.playhead:state.seekBeat;
     if(state.presetId==="held"){
       if(beat<8)return "Cm(add9) · C pedal";
       if(beat<16)return "Abmaj7/C";
@@ -538,6 +538,8 @@
     return {w:cssWidth,h:cssHeight,labelW};
   }
   function renderRoll() {
+    const positionLabel=$("cuePositionLabel"),positionText=`Cue start: bar ${Math.floor(state.seekBeat/4)+1} · beat ${fmt(state.seekBeat%4+1)}`;
+    if(positionLabel.textContent!==positionText)positionLabel.textContent=positionText;
     if(!ctx2d) return;
     const {w,h,labelW}=getCanvasDimensions(); const ctx=ctx2d;
     const colors=printingRoll?printRollColors:rollColors;
@@ -821,18 +823,32 @@
       return px>=ex&&px<=ex+Math.max(4,e.durationBeats*beatWidth())&&py>=ey&&py<=ey+rowHeight-4;
     })||null;
   }
+  function seekToCanvasPosition(ev) {
+    const rect=canvas.getBoundingClientRect(),scale=canvas.clientWidth/rect.width;
+    const x=(ev.clientX-rect.left)*scale;
+    if(x<50)return;
+    // Convert pixels to beats before clamping, including CSS scaling and scroll.
+    const beat=snap((x-50)/beatWidth());
+    const position=Math.max(0,Math.min(Math.max(0,totalBeats()-state.snap),beat));
+    const wasPlaying=state.isPlaying;
+    const events=wasPlaying?playbackEvents.slice():null;
+    const options=wasPlaying?{tempo:playbackTempo,length:playbackLength,toneId:playbackToneId}:null;
+    if(wasPlaying)stopAudio(false);
+    state.seekBeat=position;state.playhead=position;
+    learning.followCue();
+    canvas.focus({preventScroll:true});
+    if(wasPlaying)playAudio(events,position,options);
+    $("readoutHarmony").textContent=currentHarmony();
+    renderRoll();
+  }
   let drag=null;
   canvas.addEventListener("pointerdown",ev=>{
     const e=findCanvasEvent(ev.clientX,ev.clientY);
     if(!e){
-      const rect=canvas.getBoundingClientRect(),scale=canvas.clientWidth/rect.width,labelW=50;
-      const beat=Math.max(0,Math.min(totalBeats(),(ev.clientX-rect.left)*scale-labelW)/beatWidth());
-      state.seekBeat=snap(beat);
-      state.playhead=state.seekBeat;
-      if(state.isPlaying){stopAudio();playAudio(state.events,state.seekBeat);}
-      renderRoll();return;
+      seekToCanvasPosition(ev);return;
     }
     ev.preventDefault();selectEvent(e.id);
+    seekToCanvasPosition(ev);
     const labelW=50,rect=canvas.getBoundingClientRect(),x=(ev.clientX-rect.left)*(canvas.clientWidth/rect.width);
     const edge=x>(labelW+(e.startBeat+e.durationBeats)*beatWidth()-9);
     remember();
@@ -872,7 +888,7 @@
       remember();if(ev.key==="ArrowUp")e.midi=Math.min(127,e.midi+1);if(ev.key==="ArrowDown")e.midi=Math.max(0,e.midi-1);
       if(ev.key==="ArrowLeft")e.startBeat=Math.max(0,e.startBeat-state.snap);if(ev.key==="ArrowRight")e.startBeat=snap(e.startBeat+state.snap);
       state.analysisProvisional=true;renderAll();
-    }else if(ev.key==="+"){addEvent("chord",60,0,1,48);}else handled=false;
+    }else if(ev.key==="+"){addNoteAtCuePosition();}else handled=false;
     if(handled)ev.preventDefault();
   });
   function addEvent(layer,midi,start,duration,velocity) {
@@ -884,7 +900,11 @@
     if(!state.selectedId)return;
     remember();state.events=state.events.filter(e=>e.id!==state.selectedId);state.selectedId=null;state.analysisProvisional=true;renderAll();
   }
-  $("addNoteButton").addEventListener("click",()=>addEvent("chord",60,Math.min(totalBeats()-1,state.seekBeat),1,48));
+  function addNoteAtCuePosition() {
+    const start=Math.max(0,Math.min(Math.max(0,totalBeats()-state.snap),state.seekBeat));
+    addEvent("chord",60,start,Math.min(1,totalBeats()-start),48);
+  }
+  $("addNoteButton").addEventListener("click",addNoteAtCuePosition);
   $("deleteNoteButton").addEventListener("click",deleteSelected);
   $("noteForm").addEventListener("submit",ev=>{
     ev.preventDefault();const e=state.events.find(n=>n.id===state.selectedId);
