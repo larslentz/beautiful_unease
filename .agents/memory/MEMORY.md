@@ -1,0 +1,2 @@
+- [Piano sample verification](piano-sample-verification.md) — finish sample preparation before restarting Vite; concurrent startup can serve HTML instead of MP3.
+- [Beginner teaching intent](beginner-teaching.md) — explain the actual musical rules behind the options, with beginner-friendly theory and listening guidance.

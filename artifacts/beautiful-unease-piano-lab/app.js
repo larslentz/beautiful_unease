@@ -102,38 +102,38 @@
     dyads: { name:"Paired dyads", bars:4, tempo:62, events:buildDyads(false), description:"Fourth to third · paired two-note shapes." },
     held: { name:"Held bass", bars:8, tempo:58, events:buildHeld(false), description:"C pedal point · four changing upper harmonies." },
     "blue-hour": { name:"Blue hour mystery", bars:8, tempo:66, events:buildBlueHour(), description:"D minor · suspended lounge harmony drifts toward an unanswered A7." },
-    windowlight: { name:"Windowlight", bars:8, tempo:72, events:buildWindowlight(), description:"F major · warm borrowed colors settle into a clear tonic." },
-    tidepool: { name:"Tidepool reflections", bars:8, tempo:64, events:buildTidepool(), description:"A minor · a moving bass line and broken chords find a quiet landing." }
+    windowlight: { name:"Windowlight", bars:8, tempo:72, events:buildWindowlight(), description:"F major · extended chords settle onto a clear tonic." },
+    tidepool: { name:"Tidepool reflections", bars:8, tempo:64, events:buildTidepool(), description:"A minor · a moving bass line and held chords find a quiet landing." }
   };
   const MOOD_PALETTES = {
     "pnw-mystery": {
       name:"Pacific Northwest dream mystery",
-      summary:"Late-night lounge pacing, suspended color, a sparse motif, and a gently wavering piano tone.",
+      summary:"Slow lounge pacing, a harmonic-minor pitch guide, spacious phrases, and soft piano echoes.",
       scale:[0,2,3,5,7,8,11], toneId:"dream",
       variants:[
-        {name:"Blue hour",tempo:-8,harmony:"ninth",melody:"sparse",bass:"pedal",description:"A held C pedal lets a cool added ninth hang in the room."},
+        {name:"Blue hour",tempo:-8,harmony:"ninth",melody:"sparse",bass:"pedal",description:"A held C pedal supports a lifted upper chord note and a sparser melody."},
         {name:"Fogline",tempo:-5,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"A chromatic inner-voice sigh meets a melody that waits before answering."},
-        {name:"Last booth",tempo:-2,harmony:"open",melody:"passing",bass:"pedal",description:"Open fifths and a few passing notes drift over a steady low note."}
+        {name:"Last booth",tempo:-2,harmony:"open",melody:"passing",bass:"pedal",description:"Wider chord spacing and short melodic answers drift over a steady low note."}
       ]
     },
     "wistful-romance": {
       name:"Wistful romance",
-      summary:"A tender minor palette, breathing phrases, and a slow, stepwise bass line.",
+      summary:"A natural-minor pitch guide, breathing phrases, and subtle chromatic bass changes.",
       scale:[0,2,3,5,7,8,10], toneId:"warm",
       variants:[
-        {name:"Soft focus",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A restrained melody leaves room around the extended chords."},
+        {name:"Soft focus",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A sparser melody leaves space around a lifted upper chord note."},
         {name:"Rain on the window",tempo:2,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"A half-step color and a late entrance make the phrase feel reflective."},
-        {name:"One last thought",tempo:4,harmony:"open",melody:"passing",bass:"stepwise",description:"An answering note fills a rest, then leaves the ending unresolved."}
+        {name:"One last thought",tempo:4,harmony:"open",melody:"passing",bass:"stepwise",description:"Short answers fill available rests over a subtly altered bass line."}
       ]
     },
     "gentle-resolution": {
       name:"Gentle resolution",
-      summary:"A warm major palette, grounded bass, and melodies that point toward a clear landing.",
+      summary:"A major pitch guide, scale-adjusted bass, and brighter melodic shapes.",
       scale:[0,2,4,5,7,9,11], toneId:"clear",
       variants:[
-        {name:"Clearing sky",tempo:2,harmony:"major",melody:"rising",bass:"roots",description:"Minor chord colors brighten into a calm, open major sound."},
-        {name:"Coming home",tempo:5,harmony:"ninth",melody:"delayed",bass:"roots",description:"A gentle major ninth and a delayed phrase bring warmth without rushing."},
-        {name:"First light",tempo:7,harmony:"open",melody:"passing",bass:"roots",description:"The bass anchors a more direct melody with a clear final contour."}
+        {name:"Clearing sky",tempo:2,harmony:"major",melody:"rising",bass:"roots",description:"Scale-guided harmony and a lifted later melody explore a brighter register."},
+        {name:"Coming home",tempo:5,harmony:"ninth",melody:"delayed",bass:"roots",description:"An upper chord-note lift and delayed melody entrances leave room around the phrase."},
+        {name:"First light",tempo:7,harmony:"open",melody:"passing",bass:"roots",description:"Wider chord spacing and short melodic answers meet a scale-adjusted bass."}
       ]
     },
     "velvet-noir": {
@@ -142,8 +142,8 @@
       scale:[0,2,3,5,6,8,9,10], toneId:"warm",
       variants:[
         {name:"Smoke line",tempo:-4,harmony:"chromatic",melody:"delayed",bass:"pedal",description:"A steady low note and a half-step inner voice keep the harmony shadowed."},
-        {name:"Streetlamp",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A dark added ninth hangs over a careful, descending bass."},
-        {name:"Last glass",tempo:1,harmony:"open",melody:"passing",bass:"stepwise",description:"Wider voicings open briefly before the melody slips away."}
+        {name:"Streetlamp",tempo:-1,harmony:"ninth",melody:"sparse",bass:"stepwise",description:"A lifted upper chord note meets a sparser melody and subtly altered bass."},
+        {name:"Last glass",tempo:1,harmony:"open",melody:"passing",bass:"stepwise",description:"Wider chord spacing leaves room for short melodic answers."}
       ]
     },
     "ember-pulse": {
@@ -151,19 +151,19 @@
       summary:"A forward-moving modal color, a steady bass foundation, and a melody with lift.",
       scale:[0,2,4,5,7,9,10], toneId:"piano",
       variants:[
-        {name:"Kindling",tempo:4,harmony:"major",melody:"rising",bass:"roots",description:"A firmer pulse and rising contour give the phrase forward motion."},
-        {name:"Heartbeat",tempo:6,harmony:"ninth",melody:"passing",bass:"roots",description:"A bright ninth and small answering notes keep the cue in motion."},
-        {name:"Coal glow",tempo:2,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"The energy softens into a measured bass walk and a late reply."}
+        {name:"Kindling",tempo:4,harmony:"major",melody:"rising",bass:"roots",description:"A faster pace and higher later melody give the phrase forward motion."},
+        {name:"Heartbeat",tempo:6,harmony:"ninth",melody:"passing",bass:"roots",description:"An upper chord-note lift and short answering notes keep the cue in motion."},
+        {name:"Coal glow",tempo:2,harmony:"chromatic",melody:"delayed",bass:"stepwise",description:"Half-step chord and bass alterations meet selected late melody entrances."}
       ]
     },
     "prismatic-drift": {
       name:"Prismatic drift",
-      summary:"Airy raised-fourth color, luminous voicings, and a gently floating melody.",
+      summary:"A raised-fourth pitch guide, wider chord colors, and gently altered melodic phrasing.",
       scale:[0,2,4,6,7,9,11], toneId:"clear",
       variants:[
-        {name:"Glass halo",tempo:1,harmony:"open",melody:"rising",bass:"roots",description:"Open intervals and a rising line catch a bright, suspended color."},
-        {name:"Soft refraction",tempo:3,harmony:"ninth",melody:"delayed",bass:"roots",description:"A major ninth lets the melody hover just above the harmony."},
-        {name:"Split light",tempo:2,harmony:"major",melody:"passing",bass:"stepwise",description:"A small passing answer moves through the luminous chord tones."}
+        {name:"Glass halo",tempo:1,harmony:"open",melody:"rising",bass:"roots",description:"Wider chord spacing and a lifted later melody explore a brighter register."},
+        {name:"Soft refraction",tempo:3,harmony:"ninth",melody:"delayed",bass:"roots",description:"An upper chord-note lift and delayed melody entrances let the phrase hover."},
+        {name:"Split light",tempo:2,harmony:"major",melody:"passing",bass:"stepwise",description:"Short melodic answers meet palette-guided harmony and subtly altered bass notes."}
       ]
     }
   };
@@ -472,7 +472,7 @@
     $("analysisStatus").textContent=state.analysisProvisional?"Provisional after edit":"Preset harmony";
     $("readoutHarmony").textContent=currentHarmony();
     $("octaveMode").value=state.octave; $("calibrationCurrent").textContent=pitchLabel(60);
-    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderMoodCandidates(); renderDiagnostics();
+    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderStartingMoodTeaching(); renderMoodCandidates(); renderDiagnostics();
     $("undoButton").disabled=!state.undo.length; $("redoButton").disabled=!state.redo.length;
     $("endingSelect").value=state.ending; $("structureSelect").value=String(state.arrangement);
     updatePlayState();
@@ -590,11 +590,26 @@
     const palette=MOOD_PALETTES[state.activeMood.moodId],variant=palette?.variants[state.activeMood.variantIndex];
     return palette&&variant?{palette,variant}:null;
   }
+  function renderStartingMoodTeaching() {
+    const host=$("startingMoodTeaching");
+    const open=host.querySelector("details")?.open??false;
+    const entries=window.CueTeaching.startingMoods[state.presetId];
+    host.replaceChildren(window.CueTeaching.details("Learn the Starting Mood · "+PRESETS[state.presetId].name,[
+      ["About this lesson","This explains the original Starting Mood, before mood generation, transposition or your edits. The piano roll and event table show the actual current cue."],
+      ...entries
+    ],open));
+  }
   function renderMoodCandidates() {
     const grid=$("moodVariantGrid");
     if(!grid)return;
+    const expandedLessons=new Set([...grid.querySelectorAll(".mood-variant")].filter(card=>card.querySelector("details")?.open).map(card=>card.dataset.teachingKey));
+    const teaching=$("moodTeaching"),palette=MOOD_PALETTES[$("moodSelect").value];
+    const teachingOpen=teaching.querySelector("details")?.open??false;
+    teaching.replaceChildren(window.CueTeaching.details("Learn this mood · "+palette.name,
+      window.CueTeaching.paletteEntries($("moodSelect").value,palette,moodScale(palette,state.transpose).map(pc=>pitchNames[pc]),state.transpose),teachingOpen));
     const seed=Number($("seedInput").value);
-    if(moodCandidateSet&&(moodCandidateSet.signature!==eventStateSignature(state.events,state.tempo,state.totalBars)||moodCandidateSet.moodId!==$("moodSelect").value||moodCandidateSet.seed!==seed))moodCandidateSet=null;
+    const currentSignature=eventStateSignature(state.events,state.tempo,state.totalBars);
+    if(moodCandidateSet&&(moodCandidateSet.signature!==currentSignature||moodCandidateSet.moodId!==$("moodSelect").value||moodCandidateSet.seed!==seed))moodCandidateSet=null;
     const seedNote=document.querySelector(".seed-note");
     if(!moodCandidateSet){
       if(seedNote)seedNote.textContent="Repeatable from this seed";
@@ -604,9 +619,14 @@
     }
     if(seedNote)seedNote.textContent=`Seed ${moodCandidateSet.seed} · repeatable`;
     grid.replaceChildren(...moodCandidateSet.candidates.map((candidate,index)=>{
-      const card=document.createElement("article");card.className="mood-variant";card.dataset.variationIndex=String(index);
+      const isApplied=state.activeMood?.moodId===candidate.moodId&&state.activeMood?.variantIndex===candidate.variantIndex&&state.activeMood?.seed===candidate.seed&&eventStateSignature(candidate.events,candidate.tempo,state.totalBars)===currentSignature;
+      const card=document.createElement("article");card.className="mood-variant"+(isApplied?" is-applied":"");card.dataset.variationIndex=String(index);
+      const teachingKey=`${candidate.moodId}:${candidate.seed}:${candidate.variantIndex}`;
+      card.dataset.teachingKey=teachingKey;
+      if(isApplied)card.setAttribute("aria-current","true");
       const number=document.createElement("div");number.className="variant-index";number.textContent=String(index+1).padStart(2,"0");
       const label=document.createElement("span");label.textContent=candidate.moodName.toUpperCase();number.append(label);
+      if(isApplied){const applied=document.createElement("span");applied.className="applied-variation";applied.textContent="ACTIVE CUE";number.append(applied);}
       const title=document.createElement("h3");title.textContent=candidate.name;
       const tempo=document.createElement("div");tempo.className="variant-tempo";
       const tempoLabel=document.createElement("span");tempoLabel.textContent="Tempo";
@@ -619,7 +639,10 @@
         button.dataset.moodAction=action;button.dataset.variationIndex=String(index);button.textContent=text;
         button.setAttribute("aria-label",`${text}: ${candidate.name}`);actions.append(button);
       });
-      card.append(number,title,tempo,description,actions);return card;
+      const variant=MOOD_PALETTES[candidate.moodId].variants[candidate.variantIndex];
+      const explanation=window.CueTeaching.details("How this variation works",
+        window.CueTeaching.variationEntries(variant,candidate,moodCandidateSet.baseEvents,moodCandidateSet.baseTempo,pitchLabel),expandedLessons.has(teachingKey));
+      card.append(number,title,tempo,description,actions,explanation);return card;
     }));
   }
   function applyMoodCandidate(candidate) {
@@ -631,7 +654,8 @@
     state.activeMood={moodId:candidate.moodId,variantIndex:candidate.variantIndex,seed:candidate.seed};
     state.analysisProvisional=true;state.selectedId=null;state.variant="original";
     $("tempoInput").value=state.tempo;$("seedInput").value=state.seed;$("variantSelect").value="original";
-    moodCandidateSet=null;renderAll();
+    if(moodCandidateSet)moodCandidateSet.signature=eventStateSignature(state.events,state.tempo,state.totalBars);
+    renderAll();
     toast(candidate.name+" is now the active cue. The piano roll, event table and exports use this version.");
   }
   function addDiagnostic(title,pass,detail,info=false){
@@ -866,7 +890,7 @@
     try{
       const moodId=$("moodSelect").value;
       const candidates=createMoodCandidates(state.events,moodId,seed,state.tempo,state.totalBars,state.transpose);
-      moodCandidateSet={moodId,seed,candidates,signature:eventStateSignature(state.events,state.tempo,state.totalBars)};
+      moodCandidateSet={moodId,seed,candidates,baseEvents:copyEvents(state.events),baseTempo:state.tempo,signature:eventStateSignature(state.events,state.tempo,state.totalBars)};
       renderMoodCandidates();toast("Three "+MOOD_PALETTES[moodId].name.toLowerCase()+" variations generated from seed "+seed+".");
     }catch(error){moodCandidateSet=null;renderMoodCandidates();toast(error.message||"Could not generate these variations.",true);}
   }
@@ -881,6 +905,10 @@
     if(button.dataset.moodAction==="preview"){
       playAudio(candidate.events,0,{tempo:candidate.tempo,length:state.totalBars*4,toneId:candidate.toneId});
     }else if(button.dataset.moodAction==="apply")applyMoodCandidate(candidate);
+  });
+  $("activeCuePlay").addEventListener("click",()=>{
+    if(state.isPlaying)stopAudio(true);
+    else playAudio(state.events,0);
   });
   document.querySelectorAll("[data-layer]").forEach(input=>input.addEventListener("change",()=>{
     state.muted[input.dataset.layer]=!input.checked;renderAll();
@@ -1086,6 +1114,12 @@
     $("lessonListen").textContent=state.isPlaying?"■ Stop idea":"Listen to this idea";
     $("lessonListen").setAttribute("aria-label",state.isPlaying?"Stop playback":"Play this lesson idea");
     $("lessonListen").setAttribute("aria-pressed",String(state.isPlaying));
+    const activeCuePlay=$("activeCuePlay");
+    if(activeCuePlay){
+      activeCuePlay.hidden=!activeMoodDetails();
+      activeCuePlay.textContent=state.isPlaying?"■ Stop playback":"▶ Play applied cue";
+      activeCuePlay.setAttribute("aria-label",state.isPlaying?"Stop playback":"Play the applied cue");
+    }
     $("readoutLength").textContent=totalBeats()+" beats";
   }
   // MIDI Standard File format 1, 480 PPQ, no runtime dependencies.

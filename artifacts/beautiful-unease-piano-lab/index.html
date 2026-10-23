@@ -62,6 +62,7 @@
         <div class="control-group"><label for="variantSelect">Voicing</label><select id="variantSelect"><option value="original">Original</option><option value="octaveUp">Upper register + octave</option><option value="octaveDown">Upper register − octave</option><option value="dyadMelody">Dyads + melody variant</option><option value="regenerate">Seeded variation</option></select></div>
         <button class="btn btn-small btn-quiet" id="resetButton" type="button">Reset exact preset</button>
       </div>
+      <div class="starting-mood-teaching" id="startingMoodTeaching"></div>
       <section class="mood-studio panel" aria-labelledby="moodStudioTitle">
         <div class="mood-intro">
           <div class="eyebrow">A small prompt, three possible paths</div>
@@ -86,9 +87,13 @@
           </div>
           <button class="btn btn-primary generate-button" id="generateMoodVariations" type="button">Generate three variations</button>
         </div>
+        <div id="moodTeaching"></div>
         <div class="mood-results-head">
           <div><span class="eyebrow">Three studies</span><p>Listen for what changes; apply a version to make it the active cue.</p></div>
-          <span class="seed-note">Same seed · new interpretation</span>
+          <div class="mood-result-tools">
+            <span class="seed-note">Same seed · new interpretation</span>
+            <button class="btn btn-small" id="activeCuePlay" type="button" hidden>▶ Play applied cue</button>
+          </div>
         </div>
         <div class="mood-variant-grid" id="moodVariantGrid" aria-live="polite">
           <article class="mood-variant" data-variation-index="0">
@@ -206,6 +211,7 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="teaching.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
