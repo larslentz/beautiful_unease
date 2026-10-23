@@ -309,23 +309,32 @@ select option { color:var(--ink); background:var(--surface-inset); }
   *,*::before,*::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }
 
-/* Preserve the pine ridges and velvet folds, now in Velouria's slate,
-   sage, and softly lit gold rather than the former ivory and wine. */
+/* Approved Atmospheric Background: the painting surrounds the composition
+   desk, while opaque working surfaces retain Velouria's quiet palette. */
 html {
   min-height: 100%;
-  background: var(--night);
+  background: #0a0e12;
 }
 body {
   position: relative;
   isolation: isolate;
   min-height: 100vh;
-  background-color: var(--paper);
+  background-color: #0a0e12;
   background-image:
-    radial-gradient(ellipse 63% 52% at 50% 43%, rgba(10, 14, 18, .94) 0%, rgba(17, 24, 33, .78) 50%, rgba(10, 14, 18, .18) 100%),
-    radial-gradient(ellipse 36rem 21rem at 50% 0%, rgba(216, 193, 142, .10), transparent 75%),
-    linear-gradient(90deg, rgba(10, 14, 18, .7) 0%, rgba(137, 166, 155, .045) 5%, transparent 18%, transparent 82%, rgba(137, 166, 155, .045) 95%, rgba(10, 14, 18, .7) 100%),
-    linear-gradient(180deg, #111821 0%, #10171e 33%, var(--paper) 74%);
-  background-attachment: fixed;
+    linear-gradient(180deg,
+      rgba(10, 14, 18, .12) 0%,
+      rgba(10, 14, 18, .08) 32%,
+      rgba(10, 14, 18, .20) 72%,
+      rgba(10, 14, 18, .54) 100%),
+    linear-gradient(90deg,
+      rgba(10, 14, 18, .46) 0%,
+      rgba(10, 14, 18, .08) 18%,
+      rgba(10, 14, 18, .02) 54%,
+      rgba(10, 14, 18, .20) 100%),
+    url("./assets/night-landscape.webp");
+  background-position: center, center, 53% 48%;
+  background-size: cover, cover, cover;
+  background-attachment: fixed, fixed, fixed;
 }
 body::before {
   content: "";
@@ -333,31 +342,41 @@ body::before {
   z-index: -1;
   inset: 0;
   pointer-events: none;
-  background-image:
-    /* Dark mist keeps the horizon distant without whitening the page. */
-    linear-gradient(180deg, rgba(10, 14, 18, .07) 0%, rgba(10, 14, 18, .15) 43%, rgba(10, 14, 18, .02) 100%),
-    /* The original velvet folds, with slate shadows and narrow gold seams. */
-    linear-gradient(90deg,
-      rgba(10, 14, 18, .7) 0%,
-      rgba(216, 193, 142, .075) 2.4%,
-      rgba(17, 24, 33, .6) 4.8%,
-      rgba(234, 215, 168, .09) 7.2%,
-      rgba(17, 24, 33, .45) 9.6%,
-      transparent 14%,
-      transparent 86%,
-      rgba(17, 24, 33, .45) 90.4%,
-      rgba(234, 215, 168, .09) 92.8%,
-      rgba(17, 24, 33, .6) 95.2%,
-      rgba(216, 193, 142, .075) 97.6%,
-      rgba(10, 14, 18, .7) 100%),
-    radial-gradient(ellipse 14rem 36rem at 0% 43%, rgba(216, 193, 142, .06), transparent 76%),
-    radial-gradient(ellipse 14rem 36rem at 100% 58%, rgba(216, 193, 142, .055), transparent 76%),
-    url("./assets/pine-atmosphere.svg"),
-    radial-gradient(ellipse 44% 22% at 12% 84%, rgba(137, 166, 155, .08), transparent 76%),
-    radial-gradient(ellipse 42% 20% at 88% 80%, rgba(137, 166, 155, .07), transparent 78%);
+  background:
+    radial-gradient(ellipse 72% 58% at 53% 46%,
+      transparent 28%,
+      rgba(10, 14, 18, .10) 100%),
+    linear-gradient(180deg,
+      rgba(10, 14, 18, .08) 0%,
+      transparent 28%,
+      rgba(10, 14, 18, .10) 100%);
   background-repeat: no-repeat;
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% min(43vh, 390px), 100% 100%, 100% 100%;
-  background-position: center, center, center, center, bottom center, center, center;
+  background-size: 100% 100%, 100% 100%;
+}
+.topbar {
+  background: rgba(10, 14, 18, .88);
+  backdrop-filter: blur(8px);
+}
+.intro {
+  text-shadow: 0 1px 18px rgba(5, 8, 11, .28);
+}
+.panel,.control-bar,.utility-strip,.mood-studio {
+  backdrop-filter: none;
+}
+@media (max-width: 760px) {
+  body {
+    background-position: center, center, 44% 46%;
+    background-attachment: scroll, scroll, fixed;
+  }
+  body::before {
+    background: linear-gradient(180deg,
+      rgba(10, 14, 18, .28) 0%,
+      rgba(10, 14, 18, .08) 24%,
+      rgba(10, 14, 18, .22) 100%);
+  }
+  .topbar {
+    backdrop-filter: none;
+  }
 }
 @media print {
   *,*::before,*::after { transition:none !important; animation:none !important; }
@@ -385,6 +404,7 @@ body::before {
     --roll-melody:#4c607d;
   }
   html, body { background:#fff; color:var(--ink); }
+  .intro { text-shadow:none; }
   body::before,.mood-studio::before { display:none; }
   .topbar,.control-bar,.roll-head-actions,.transport,.tool-actions,.lesson-nav,.editor-actions,.utility-strip,.btn { display:none !important; }
   .layout { max-width:none; padding:0; }

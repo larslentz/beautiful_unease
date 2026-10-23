@@ -9,8 +9,8 @@ The user chose the color scheme of their Velouria project for Beautiful Unease. 
 
 **How to apply:** Use Velouria as a palette reference, not as permission to copy its layout, artwork, or content.
 
-The user approved the combined pine-and-velvet-glow background, showing both pines and curtains.
+The user approved Atmospheric Background A using their supplied night-landscape painting around the existing composition desk, with opaque working panels.
 
-**Why:** The user asked to combine those designs and then apply the result to the app.
+**Why:** The user chose A from the three artwork previews and asked to put it into the app, replacing the earlier pine-and-velvet background.
 
-**How to apply:** Retain that background composition when making palette changes unless the user requests a different background.
+**How to apply:** Preserve the approved artwork treatment and Velouria palette unless the user requests a change. Keep the existing background previews for reference.
