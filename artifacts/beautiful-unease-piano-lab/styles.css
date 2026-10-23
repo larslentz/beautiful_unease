@@ -338,9 +338,9 @@ body {
       rgba(10, 14, 18, .02) 54%,
       rgba(10, 14, 18, .20) 100%),
     url("./assets/night-landscape.webp");
-  background-position: center, center, 53% 48%;
-  background-size: cover, cover, cover;
-  background-attachment: fixed, fixed, fixed;
+  background-position: center, center, 53% top;
+  background-size: cover, cover, 100% auto;
+  background-attachment: fixed, fixed, scroll;
 }
 body::before {
   content: "";
@@ -371,8 +371,9 @@ body::before {
 }
 @media (max-width: 760px) {
   body {
-    background-position: center, center, 44% 46%;
-    background-attachment: scroll, scroll, fixed;
+    background-position: center, center, 44% top;
+    background-size: cover, cover, 100% auto;
+    background-attachment: fixed, fixed, scroll;
   }
   body::before {
     background: linear-gradient(180deg,
