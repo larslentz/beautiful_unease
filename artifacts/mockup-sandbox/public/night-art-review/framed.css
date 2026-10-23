@@ -1,0 +1,112 @@
+/* C · Framed Landscape — a small, personal artwork beside the composition note. */
+body[data-design="framed"] .intro {
+  grid-template-columns: minmax(0, 1.08fr) minmax(235px, .58fr) auto;
+  align-items: center;
+  gap: clamp(22px, 3.2vw, 48px);
+  margin-top: 12px;
+  margin-bottom: 30px;
+}
+
+body[data-design="framed"] .intro > div:first-child {
+  min-width: 0;
+}
+
+body[data-design="framed"] .intro-artwork {
+  position: relative;
+  width: clamp(230px, 24vw, 322px);
+  aspect-ratio: 1;
+  justify-self: center;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid rgba(216, 193, 142, .62);
+  background: linear-gradient(145deg, #29343b, #111821 46%, #202b32);
+  box-shadow:
+    0 0 0 4px rgba(10, 14, 18, .7),
+    0 0 0 5px rgba(137, 166, 155, .25),
+    0 14px 34px rgba(0, 0, 0, .35);
+  animation: framed-art-arrive .7s cubic-bezier(.2,.75,.25,1) both;
+}
+
+body[data-design="framed"] .intro-artwork::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 5px;
+  border: 1px solid rgba(234, 215, 168, .19);
+  pointer-events: none;
+}
+
+body[data-design="framed"] .intro-artwork img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #10171e;
+}
+
+body[data-design="framed"] .session-stamp {
+  align-self: end;
+  max-width: 210px;
+  min-width: 0;
+  white-space: normal;
+}
+
+@keyframes framed-art-arrive {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1020px) {
+  body[data-design="framed"] .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, .62fr);
+    align-items: center;
+  }
+
+  body[data-design="framed"] .session-stamp {
+    grid-column: 1 / -1;
+    max-width: none;
+    justify-self: start;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 10px 0 0;
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-design="framed"] .intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 0;
+    margin-bottom: 22px;
+  }
+
+  body[data-design="framed"] .intro-artwork {
+    width: min(100%, 320px);
+    justify-self: start;
+    margin: 3px 0 2px;
+    padding: 9px;
+  }
+
+  body[data-design="framed"] .session-stamp {
+    grid-column: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding-top: 9px;
+  }
+}
+
+@media (max-width: 440px) {
+  body[data-design="framed"] .intro-artwork {
+    width: min(100%, 286px);
+    justify-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-design="framed"] .intro-artwork { animation: none; }
+}

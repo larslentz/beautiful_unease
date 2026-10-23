@@ -1,0 +1,88 @@
+/*
+ * A · Atmospheric Background
+ * The painting becomes the room around the existing composition desk.
+ * Keep the original image legible in the open margins; the dense work
+ * surfaces remain solid and quiet for long sessions.
+ */
+html {
+  min-height: 100%;
+  background: #0a0e12;
+}
+
+body {
+  background-color: #0a0e12;
+  background-image:
+    linear-gradient(180deg,
+      rgba(10, 14, 18, .12) 0%,
+      rgba(10, 14, 18, .08) 32%,
+      rgba(10, 14, 18, .20) 72%,
+      rgba(10, 14, 18, .54) 100%),
+    linear-gradient(90deg,
+      rgba(10, 14, 18, .46) 0%,
+      rgba(10, 14, 18, .08) 18%,
+      rgba(10, 14, 18, .02) 54%,
+      rgba(10, 14, 18, .20) 100%),
+    url("/__mockup/images/night-landscape.webp");
+  background-position: center, center, 53% 48%;
+  background-size: cover, cover, cover;
+  background-attachment: fixed, fixed, fixed;
+}
+
+/* Replace the baseline decorative silhouette with a light veil only.
+   The artwork itself supplies the stars, trees, shore, and water. */
+body::before {
+  background:
+    radial-gradient(ellipse 72% 58% at 53% 46%,
+      transparent 28%,
+      rgba(10, 14, 18, .10) 100%),
+    linear-gradient(180deg,
+      rgba(10, 14, 18, .08) 0%,
+      transparent 28%,
+      rgba(10, 14, 18, .10) 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% 100%;
+}
+
+/* Retain the page's existing palette while lending the header a little
+   transparency so the painted night feels continuous behind the brand. */
+.topbar {
+  background: rgba(10, 14, 18, .88);
+  backdrop-filter: blur(8px);
+}
+
+.intro {
+  text-shadow: 0 1px 18px rgba(5, 8, 11, .28);
+}
+
+/* Panels are intentionally opaque: teaching and exact note work stay clear. */
+.panel,
+.control-bar,
+.utility-strip,
+.mood-studio {
+  backdrop-filter: none;
+}
+
+@media (max-width: 760px) {
+  body {
+    background-position: center, center, 44% 46%;
+    background-attachment: scroll, scroll, fixed;
+  }
+
+  body::before {
+    background:
+      linear-gradient(180deg,
+        rgba(10, 14, 18, .28) 0%,
+        rgba(10, 14, 18, .08) 24%,
+        rgba(10, 14, 18, .22) 100%);
+  }
+
+  .topbar {
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

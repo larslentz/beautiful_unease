@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Beautiful Unease Piano Lab</title>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#0a0e12"/>
+  <rect x="12" y="14" width="40" height="36" rx="4" fill="#eeebe2"/>
+  <path d="M22 15v33M32 15v33M42 15v33" stroke="#171e27" stroke-width="2"/>
+  <path d="M19 14v15h6V14zM29 14v15h6V14zM39 14v15h6V14z" fill="#111821"/>
+  <path d="M15 35h34" stroke="#d8c18e" stroke-width="2.5"/>
+  <circle cx="45" cy="43" r="4" fill="#d8c18e"/>
+</svg>
