@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Beautiful Unease — Piano Harmony &amp; Melody Lab</title>
   <meta name="description" content="An online piano composition lab for learning romantic, melancholic harmony and melody, with exact MIDI-ready events and sampled piano playback.">
-  <meta name="theme-color" content="#f1ede4">
+  <meta name="theme-color" content="#0a0e12">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -63,6 +63,7 @@
         <button class="btn btn-small btn-quiet" id="resetButton" type="button">Reset exact preset</button>
       </div>
       <div class="starting-mood-teaching" id="startingMoodTeaching"></div>
+      <div class="starting-mood-teaching" id="endingColorTeaching"></div>
       <section class="mood-studio panel" aria-labelledby="moodStudioTitle">
         <div class="mood-intro">
           <div class="eyebrow">A small prompt, three possible paths</div>
@@ -141,7 +142,7 @@
             </div>
             <div class="roll-viewport"><canvas id="pianoRoll" tabindex="0" role="application" aria-label="Interactive piano roll. Use arrow keys to move the selected note; delete removes it; plus adds a note."></canvas></div>
             <div class="roll-footer">
-              <div class="legend"><span><i class="swatch" style="background:#829b9d"></i>Bass</span><span><i class="swatch" style="background:#c69863"></i>Harmony</span><span><i class="swatch" style="background:#c77e73"></i>Melody</span></div>
+              <div class="legend"><span><i class="swatch" style="background:var(--roll-bass)"></i>Bass</span><span><i class="swatch" style="background:var(--roll-chord)"></i>Harmony</span><span><i class="swatch" style="background:var(--roll-melody)"></i>Melody</span></div>
               <div class="hint">Double-click to add · drag note to move · drag its right edge to resize · Delete to remove</div>
             </div>
           </section>

@@ -6,7 +6,19 @@
   const pitchNames = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
   const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const layers = ["bass", "chord", "melody"];
-  const layerColors = { bass: "#829b9d", chord: "#c69863", melody: "#c77e73" };
+  const rollStyle = getComputedStyle(document.documentElement);
+  const rollColors = Object.fromEntries(
+    ["background","labels","black","white","tonic","text","muted","row","barband","baralt","barline","beatline","bass","chord","melody","selection","mark","playhead"]
+      .map(key=>[key,rollStyle.getPropertyValue("--roll-"+key).trim()])
+  );
+  // A light canvas is drawn for paper; screen colors stay shared with the CSS legend.
+  const printRollColors = {
+    background:"#ffffff",labels:"#f1f2ed",black:"#e8e9e5",white:"#ffffff",tonic:"#dce2dd",
+    text:"#263a3a",muted:"#40514d",row:"#c6c8c3",barband:"#d7dcd6",baralt:"#e6e9e4",
+    barline:"#6d7671",beatline:"#c3c8c4",bass:"#48645a",chord:"#806331",melody:"#4c607d",
+    selection:"#0a0e12",mark:"#ffffff",playhead:"#963d39"
+  };
+  let printingRoll = false;
   const lessonData = [
     { title: "Read the piano roll", short: "Read time & pitch", compareLabel:"Compare a sustained note with a short one", text: "Pitch rises as you move upward; time moves from left to right. A note's rectangle is its duration. Notes that begin together sound at once; an empty stretch is a rest.", action: "Place Eb4 at bar 1 beat 1; drag its right edge to bar 3 beat 1. Notice that this is an eight-beat note, not eight bars.", question: "Where does the melody leave room for the harmony to speak?" },
     { title: "A ninth in the room", short: "C minor + D", compareLabel:"Compare Cm with and without D", text: "C, Eb and G make a C minor triad. Add D above them and the chord becomes Cm(add9). Compare the texture with D present and absent: the chord stays minor, but the added note changes its openness.", action: "In FL Studio, add D5 above a C–Eb–G voicing. Keep the same start time so all four notes sound together.", question: "Does D feel like a destination, or like a thought that has not finished?" },
@@ -472,7 +484,7 @@
     $("analysisStatus").textContent=state.analysisProvisional?"Provisional after edit":"Preset harmony";
     $("readoutHarmony").textContent=currentHarmony();
     $("octaveMode").value=state.octave; $("calibrationCurrent").textContent=pitchLabel(60);
-    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderStartingMoodTeaching(); renderMoodCandidates(); renderDiagnostics();
+    renderRoll(); renderTable(); renderSelection(); renderLesson(); renderStartingMoodTeaching(); renderEndingColorTeaching(); renderMoodCandidates(); renderDiagnostics();
     $("undoButton").disabled=!state.undo.length; $("redoButton").disabled=!state.redo.length;
     $("endingSelect").value=state.ending; $("structureSelect").value=String(state.arrangement);
     updatePlayState();
@@ -506,36 +518,37 @@
   function renderRoll() {
     if(!ctx2d) return;
     const {w,h,labelW}=getCanvasDimensions(); const ctx=ctx2d;
+    const colors=printingRoll?printRollColors:rollColors;
     const rows=pitchHigh-pitchLow+1, gridH=rows*rowHeight, top=9;
-    ctx.clearRect(0,0,w,h); ctx.fillStyle="#e9e5dc"; ctx.fillRect(0,0,w,h);
-    ctx.fillStyle="#ded9ce"; ctx.fillRect(0,0,labelW,h);
+    ctx.clearRect(0,0,w,h); ctx.fillStyle=colors.background; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle=colors.labels; ctx.fillRect(0,0,labelW,h);
     for(let midi=pitchLow;midi<=pitchHigh;midi++){
       const y=top+(pitchHigh-midi)*rowHeight, isBlack=[1,3,6,8,10].includes(midi%12);
-      ctx.fillStyle=isBlack?"#e5e0d7":"#f1eee7"; ctx.fillRect(labelW,y,w-labelW,rowHeight);
-      if(midi%12===0){ctx.fillStyle="#e7e2d9";ctx.fillRect(0,y,labelW,rowHeight);}
-      ctx.fillStyle=midi%12===0?"#53635e":"#87908a";ctx.font=midi%12===0?"9px system-ui":"8px system-ui";ctx.textAlign="right";ctx.fillText(pitchLabel(midi),labelW-7,y+11);
-      ctx.strokeStyle="#d4d0c7";ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(labelW,y+rowHeight);ctx.lineTo(w,y+rowHeight);ctx.stroke();
+      ctx.fillStyle=isBlack?colors.black:colors.white; ctx.fillRect(labelW,y,w-labelW,rowHeight);
+      if(midi%12===0){ctx.fillStyle=colors.tonic;ctx.fillRect(0,y,labelW,rowHeight);}
+      ctx.fillStyle=midi%12===0?colors.text:colors.muted;ctx.font=midi%12===0?"9px system-ui":"8px system-ui";ctx.textAlign="right";ctx.fillText(pitchLabel(midi),labelW-7,y+11);
+      ctx.strokeStyle=colors.row;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(labelW,y+rowHeight);ctx.lineTo(w,y+rowHeight);ctx.stroke();
     }
     const bw=beatWidth();
     for(let beat=0;beat<=totalBeats();beat++){
       const x=labelW+beat*bw;
-      if(beat%4===0){ctx.fillStyle=beat%8===0?"#d8d3c8":"#e1dcd1";ctx.fillRect(x,0,1,h);}
-      ctx.strokeStyle=beat%4===0?"#aaa79d":"#d6d1c8";ctx.lineWidth=beat%4===0?1.2:.55;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+gridH);ctx.stroke();
-      if(beat<totalBeats()&&beat%4===0){ctx.fillStyle="#64716d";ctx.font="10px system-ui";ctx.textAlign="left";ctx.fillText("BAR "+(beat/4+1),x+5,12);}
-      else if(beat<totalBeats()&&beat%4===1){ctx.fillStyle="#89918b";ctx.font="8px system-ui";ctx.textAlign="left";ctx.fillText("2",x+3,12);}
+      if(beat%4===0){ctx.fillStyle=beat%8===0?colors.barband:colors.baralt;ctx.fillRect(x,0,1,h);}
+      ctx.strokeStyle=beat%4===0?colors.barline:colors.beatline;ctx.lineWidth=beat%4===0?1.2:.55;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+gridH);ctx.stroke();
+      if(beat<totalBeats()&&beat%4===0){ctx.fillStyle=colors.muted;ctx.font="10px system-ui";ctx.textAlign="left";ctx.fillText("BAR "+(beat/4+1),x+5,12);}
+      else if(beat<totalBeats()&&beat%4===1){ctx.fillStyle=colors.muted;ctx.font="8px system-ui";ctx.textAlign="left";ctx.fillText("2",x+3,12);}
     }
     state.events.forEach(e=>{
       const x=labelW+e.startBeat*bw+1, y=top+(pitchHigh-e.midi)*rowHeight+2, width=Math.max(4,e.durationBeats*bw-2);
       ctx.globalAlpha=state.muted[e.layer]?.34:1;
-      ctx.fillStyle=layerColors[e.layer]||layerColors.chord;
+      ctx.fillStyle=colors[e.layer]||colors.chord;
       ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,width,rowHeight-4,2):ctx.rect(x,y,width,rowHeight-4);ctx.fill();
-      if(e.id===state.selectedId){ctx.strokeStyle="#253c39";ctx.lineWidth=2;ctx.stroke();}
+      if(e.id===state.selectedId){ctx.strokeStyle=colors.mark;ctx.lineWidth=4;ctx.stroke();ctx.strokeStyle=colors.selection;ctx.lineWidth=2;ctx.stroke();}
       const same=state.events.filter(n=>n.startBeat===e.startBeat && n.id!==e.id);
-      if(same.length){ctx.fillStyle="#263a3a";ctx.beginPath();ctx.arc(x+4,y+4,1.7,0,Math.PI*2);ctx.fill();}
+      if(same.length){ctx.fillStyle=colors.mark;ctx.beginPath();ctx.arc(x+4,y+4,1.7,0,Math.PI*2);ctx.fill();}
       ctx.globalAlpha=1;
     });
     if(state.isPlaying||state.seekBeat>0){
-      const x=labelW+(state.isPlaying?state.playhead:state.seekBeat)*bw;ctx.fillStyle="#a34f47";ctx.globalAlpha=.8;ctx.fillRect(x,0,2,h);ctx.globalAlpha=1;
+      const x=labelW+(state.isPlaying?state.playhead:state.seekBeat)*bw;ctx.fillStyle=colors.mark;ctx.fillRect(x-1,0,4,h);ctx.fillStyle=colors.playhead;ctx.fillRect(x,0,2,h);
     }
   }
   function renderTable() {
@@ -598,6 +611,16 @@
       ["About this lesson","This explains the original Starting Mood, before mood generation, transposition or your edits. The piano roll and event table show the actual current cue."],
       ...entries
     ],open));
+  }
+  function renderEndingColorTeaching() {
+    const host=$("endingColorTeaching");
+    const open=host.querySelector("details")?.open??false;
+    const option=[...$("endingSelect").options].find(item=>item.value===state.ending);
+    host.replaceChildren(window.CueTeaching.details("Learn the Ending Color · "+(option?.textContent||"Original ending"),
+      window.CueTeaching.endingEntries(state.ending,{
+        applicable:state.presetId==="romantic"&&state.arrangement===8,
+        transpose:state.transpose,pitchLabel
+      }),open));
   }
   function renderMoodCandidates() {
     const grid=$("moodVariantGrid");
@@ -859,7 +882,7 @@
   $("presetSelect").addEventListener("change",e=>setPreset(e.target.value));
   $("tempoInput").addEventListener("change",e=>{const n=Number(e.target.value);if(!Number.isInteger(n)||n<45||n>85){e.target.value=state.tempo;toast("Tempo must be between 45 and 85 BPM.",true);return;}state.tempo=n;renderAll();});
   $("structureSelect").addEventListener("change",e=>{
-    remember();const n=Number(e.target.value);state.arrangement=n;state.ending="original";state.endingSelect.value="original";refreshDerived();renderAll();
+    remember();const n=Number(e.target.value);state.arrangement=n;state.ending="original";$("endingSelect").value="original";refreshDerived();renderAll();
   });
   $("transposeInput").addEventListener("change",e=>{
     const next=Number(e.target.value);if(!Number.isInteger(next)||next< -12||next>12){e.target.value=state.transpose;toast("Transpose must be an integer from −12 to +12.",true);return;}
@@ -1187,6 +1210,8 @@
     downloadBlob(new Blob([csv],{type:"text/csv"}),"beautiful-unease-events.csv");setStatus("CSV event table saved.");
   });
   $("printButton").addEventListener("click",()=>window.print());
+  window.addEventListener("beforeprint",()=>{printingRoll=true;renderRoll();});
+  window.addEventListener("afterprint",()=>{printingRoll=false;renderRoll();});
   $("jsonImport").addEventListener("change",ev=>{
     const file=ev.target.files&&ev.target.files[0];if(!file)return;
     const reader=new FileReader();

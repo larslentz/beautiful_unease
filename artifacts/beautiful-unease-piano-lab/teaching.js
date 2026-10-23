@@ -87,6 +87,56 @@
     }
   };
 
+  const endings = {
+    borrowed: {
+      notes: [36,43,52,55,62], melody: 72,
+      theory: "The added chord is C(add9): C–E–G with an extra D. E natural replaces the Eb of C minor. The third—the note three or four semitones (half steps) above the root, the note a chord is named after—decides whether this basic chord is minor or major. E is four semitones above C, so the final tonic (home chord) becomes major. This is a parallel-major ending: C stays home, unlike changing to the relative major, Eb.",
+      listen: "Listen for Eb giving way to E natural as the minor passage reaches its new C-major ending. That one-semitone change can feel brighter. D is the added ninth: a second above C, placed in a higher octave. It keeps some openness rather than closing on a plain C-major triad.",
+      compare: "Compare this with Closed. Both add a C-based final bar with the same bass, timing and high C melody; only the chord's Eb changes to E natural. Solo Harmony to hear that one-note difference."
+    },
+    closed: {
+      notes: [36,43,51,55,62], melody: 72,
+      theory: "The added chord is Cm(add9): C–Eb–G with an extra D. The preceding G7 is the dominant—a chord that strongly points home. Moving from G7 to C minor is a dominant-to-tonic cadence, a chord change that can sound like an arrival. The melody also lands on C, the home note.",
+      listen: "Listen for B in G7 wanting to rise a semitone to C at the new ending. The bass moves from G to C. The ending is more settled, but not completely plain: D is still an added ninth, fourteen semitones above C, which adds a gentle extra color.",
+      compare: "Compare Original with Closed. Original leaves the return to C minor for the next loop; Closed writes that return into a new ninth bar. Then compare Borrowed-major: the ending's minor third, Eb, becomes E natural there."
+    },
+    uneasy: {
+      notes: [36,43,51,59,62], melody: 67,
+      theory: "The added chord is Cm(maj9): C–Eb–G–B–D. Eb keeps the minor third, while B is the major seventh, eleven semitones above C. The name combines a minor chord with a major seventh; it does not mean both a major and minor third are played. D supplies the ninth.",
+      listen: "B sits one semitone below a C in the next octave. Keeping B over the low C preserves a pull toward C instead of fully releasing it. These notes are spread across registers, not necessarily adjacent piano keys. The melody ends on G, the fifth of C, rather than the high C used by Closed and Borrowed-major.",
+      compare: "Compare Closed with Uneasy. The upper chord's G is replaced by B (a lower G remains), and the melody's high C changes to G. Solo Harmony first, then Melody: both layers change, so the difference is not just a darker sound effect."
+    }
+  };
+
+  function endingEntries(ending, {applicable, transpose, pitchLabel}) {
+    const recipe = endings[ending];
+    const entries = [
+      ["About this lesson", "Ending Color changes written notes, not the piano instrument or an audio effect. This explains the preset recipe; manual edits and applied Mood Palette variations can change the actual notes. The piano roll and event table always show the current cue."]
+    ];
+    if (!recipe) {
+      entries.push(
+        ["How it works", "Original ending adds no extra bar. It uses the ending supplied by the Starting Mood and chosen Length, with any selected voicing and melody settings. Original does not necessarily mean resolved: an ending can point toward the start of the next loop."],
+        ["Listen for", applicable
+          ? "In the eight-bar Romantic melancholy preset, the cue stops on G7. Its B is one semitone below C, inviting a return to C minor when the loop restarts. Closed writes that return into an extra bar; Borrowed-major changes its final chord to major; Uneasy holds on to a major-seventh tension."
+          : "Follow the last bass and melody notes, then listen across the loop boundary. Do they arrive on the home note, or does the next loop supply the arrival? Different Starting Moods and lengths can end at different points."],
+        ["Try it", "To compare the three added endings, choose Romantic melancholy and Length 8, then select an Ending Color. Turn Loop off if you want to hear the final bar stop rather than run straight into another pass."]
+      );
+    } else {
+      entries.push(
+        ["When this applies", applicable
+          ? "This recipe works with Romantic melancholy at Length 8. It appends bar 9 after the original eight bars; it does not replace bar 8. Length remains the eight-bar source arrangement, while the cue/readout becomes nine bars (36 beats)."
+          : "This option currently adds no ending: the extra-ending recipes only work with Romantic melancholy at Length 8. Select that Starting Mood and length, then choose the Ending Color again. Other Starting Moods and lengths keep their existing ending."],
+        ["The music theory", recipe.theory],
+        ["The written recipe", "The added bass and chord notes, from low to high using your current Transpose and Octave Labels settings, are "+recipe.notes.map(midi=>pitchLabel(midi+transpose)).join(", ")+", with "+pitchLabel(recipe.melody+transpose)+" in the melody. Repeated note names are the same pitch class in different octaves. The bass and chord last four beats; the melody lasts three, leaving the last beat to the held harmony. These are the recipe's pitches, not an analysis of later edits."],
+        ["Listen for", recipe.listen],
+        ["Try it", recipe.compare+" Turn Loop off to hear the cue stop at its ending."]
+      );
+    }
+    if (transpose) entries.push(["About transposition", "The theory above uses the original C-centered note names. Your Transpose setting shifts the whole written cue by "+transpose+" semitones (half steps); the chord relationships stay the same. Octave Labels only changes the names displayed, not the pitches."]);
+    entries.push(["Changing this control", "Selecting an Ending Color rebuilds the cue from the current Starting Mood and arrangement settings. It is not an extra treatment layered onto a generated or manually edited cue."]);
+    return entries;
+  }
+
   function details(summaryText, entries, open = false) {
     const element = document.createElement("details");
     element.className = "teaching-guide";
@@ -140,5 +190,5 @@
     ];
   }
 
-  window.CueTeaching = { details, startingMoods, paletteEntries, variationEntries };
+  window.CueTeaching = { details, startingMoods, endingEntries, paletteEntries, variationEntries };
 })();
