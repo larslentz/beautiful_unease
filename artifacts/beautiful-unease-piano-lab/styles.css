@@ -85,7 +85,9 @@ a { color: inherit; }
 .brand-lockup { display:flex; align-items:center; gap:20px; min-width:0; }
 .brand { display:flex; align-items:center; gap:13px; text-decoration:none; }
 .brand-mark { width:37px; height:37px; border:1px solid var(--rose); border-radius:50%; display:grid; place-items:center; color:var(--rose); font-family:var(--serif); font-size:21px; line-height:1; transform:rotate(-12deg); }
+.brand-copy { display:flex; flex-direction:column; gap:2px; }
 .brand-name { font-family:var(--serif); font-size:17px; letter-spacing:.015em; }
+.brand-subtitle { color:var(--muted); font-size:9px; letter-spacing:.1em; line-height:1.2; }
 .creator-credit { display:flex; flex-direction:column; gap:2px; border-left:1px solid var(--line); padding-left:16px; line-height:1.15; }
 .creator-byline { color:var(--muted); font-size:9px; letter-spacing:.15em; }
 .creator-link { display:inline-flex; align-items:center; gap:4px; width:max-content; color:var(--deep-2); font-size:12px; font-weight:700; text-decoration-color:var(--ochre); text-underline-offset:3px; }
@@ -98,6 +100,9 @@ a { color: inherit; }
 h1,h2,h3,p { margin-top:0; }
 h1 { margin:9px 0 10px; color:var(--deep); font:400 clamp(32px,4vw,51px)/1.03 var(--serif); letter-spacing:-.04em; }
 .intro-copy { color:var(--muted); max-width:620px; font-size:14px; margin:0; }
+.intro-lead { color:var(--deep); font:italic 17px/1.4 var(--serif); margin:0 0 4px; }
+.velouria-app-link { display:inline-flex; align-items:center; gap:5px; margin-top:9px; color:var(--deep-2); font-size:12px; font-weight:700; text-decoration-color:var(--ochre); text-underline-offset:3px; }
+.velouria-app-link:hover { color:var(--rose); text-decoration-color:currentColor; }
 .session-stamp { border-left:1px solid var(--line); padding:7px 0 7px 18px; color:var(--muted); font-size:11px; line-height:1.75; white-space:nowrap; }
 .session-stamp strong { color:var(--deep); display:block; font:400 19px var(--serif); }
 .control-bar { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; padding:13px 15px; margin-bottom:20px; background:var(--surface-inset); color:var(--ink); border-radius:4px; box-shadow:0 0 0 1px var(--line),0 8px 24px #00000026; }
