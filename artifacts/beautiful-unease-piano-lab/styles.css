@@ -101,6 +101,7 @@ h1,h2,h3,p { margin-top:0; }
 h1 { margin:9px 0 10px; color:var(--deep); font:400 clamp(32px,4vw,51px)/1.03 var(--serif); letter-spacing:-.04em; }
 .intro-copy { color:var(--muted); max-width:620px; font-size:14px; margin:0; }
 .intro-lead { color:var(--deep); font:italic 17px/1.4 var(--serif); margin:0 0 4px; }
+.intro-guidance { color:var(--muted); max-width:620px; font-size:12px; line-height:1.5; margin:7px 0 0; }
 .velouria-app-link { display:inline-flex; align-items:center; gap:5px; margin-top:9px; color:var(--deep-2); font-size:12px; font-weight:700; text-decoration-color:var(--ochre); text-underline-offset:3px; }
 .velouria-app-link:hover { color:var(--rose); text-decoration-color:currentColor; }
 .session-stamp { border-left:1px solid var(--line); padding:7px 0 7px 18px; color:var(--muted); font-size:11px; line-height:1.75; white-space:nowrap; }

@@ -15,6 +15,12 @@ The user wants as much useful teaching detail as possible directly on the piano 
 
 **How to apply:** Prefer contextual annotations attached to actual notes and relationships, with readable detail inside the roll area; keep musical facts accurate and avoid hiding all explanations behind hover.
 
+The piano is a clear starting sound for hearing the musical ideas, not a limit on the instruments or samples users can shape melodies and harmonies for.
+
+**Why:** The user explicitly said to start with a soft piano to hear the music clearly, then use the app to shape melodies and harmonies for other instruments and samples.
+
+**How to apply:** Describe a soft piano as a useful first listening reference, while making clear that the musical ideas can guide other instruments and samples too.
+
 Keep tonic reference, chord root, and actual interval spacing distinct. A chord's minor-third color can be voiced as a compound interval; a pedal bass is not automatically the chord root.
 
 **Why:** Treating these as interchangeable would teach beginners incorrect relationships even when the pitch-class description sounds plausible.
