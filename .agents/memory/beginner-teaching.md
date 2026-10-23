@@ -8,3 +8,9 @@ The user wants this app to be a teaching tool too: explain the algorithm or meth
 **Why:** The user explicitly requested beginner explanations, using Pacific Northwest dream mystery as the example.
 
 **How to apply:** Pair musical terms with plain-language definitions and listening guidance. Explain the actual rules rather than treating mood names or internal recipe labels as guaranteed theory. Keep explanations and descriptions consistent when generation rules change; distinguish changed notes from playback-only effects.
+
+The user wants as much useful teaching detail as possible directly on the piano roll, including marking relationships such as minor thirds on the notes themselves.
+
+**Why:** The user asked to connect the Learn terminology to visible piano-roll examples rather than keeping those explanations separate from the music.
+
+**How to apply:** Prefer contextual annotations attached to actual notes and relationships, with readable detail inside the roll area; keep musical facts accurate and avoid hiding all explanations behind hover.
