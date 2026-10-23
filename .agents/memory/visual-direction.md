@@ -14,3 +14,9 @@ The user approved Atmospheric Background A using their supplied night-landscape 
 **Why:** The user chose A from the three artwork previews and asked to put it into the app, replacing the earlier pine-and-velvet background.
 
 **How to apply:** Preserve the approved artwork treatment and Velouria palette unless the user requests a change. Keep the existing background previews for reference.
+
+Keep the approved landscape fixed in the viewport while page content scrolls. End the app content with a clear full-screen reveal so the complete painting is visible once users scroll past the interface.
+
+**Why:** The user explicitly requested a static background that remains in place while text and panels scroll away.
+
+**How to apply:** Keep the artwork on a fixed visual layer; do not attach it to page scrolling. Preserve a content-free ending that exposes the full image.

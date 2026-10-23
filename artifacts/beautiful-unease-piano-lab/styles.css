@@ -336,11 +336,10 @@ body {
       rgba(10, 14, 18, .46) 0%,
       rgba(10, 14, 18, .08) 18%,
       rgba(10, 14, 18, .02) 54%,
-      rgba(10, 14, 18, .20) 100%),
-    url("./assets/night-landscape.webp");
-  background-position: center, center, 53% top;
-  background-size: cover, cover, 100% auto;
-  background-attachment: fixed, fixed, scroll;
+      rgba(10, 14, 18, .20) 100%);
+  background-position: center, center;
+  background-size: cover, cover;
+  background-attachment: fixed, fixed;
 }
 body::before {
   content: "";
@@ -355,9 +354,22 @@ body::before {
     linear-gradient(180deg,
       rgba(10, 14, 18, .08) 0%,
       transparent 28%,
-      rgba(10, 14, 18, .10) 100%);
+      rgba(10, 14, 18, .10) 100%),
+    url("./assets/night-landscape.webp");
+  background-position: center, center, center;
   background-repeat: no-repeat;
-  background-size: 100% 100%, 100% 100%;
+  background-size: 100% 100%, 100% 100%, contain;
+}
+.background-reveal {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+}
+.background-reveal-end {
+  position: absolute;
+  inset-block-end: 0;
+  inline-size: 1px;
+  block-size: 1px;
 }
 .topbar {
   background: rgba(10, 14, 18, .88);
@@ -371,15 +383,22 @@ body::before {
 }
 @media (max-width: 760px) {
   body {
-    background-position: center, center, 44% top;
-    background-size: cover, cover, 100% auto;
-    background-attachment: fixed, fixed, scroll;
+    background-position: center, center;
+    background-size: cover, cover;
+    background-attachment: fixed, fixed;
   }
   body::before {
-    background: linear-gradient(180deg,
-      rgba(10, 14, 18, .28) 0%,
-      rgba(10, 14, 18, .08) 24%,
-      rgba(10, 14, 18, .22) 100%);
+    background:
+      radial-gradient(ellipse 72% 58% at 53% 46%,
+        transparent 28%,
+        rgba(10, 14, 18, .10) 100%),
+      linear-gradient(180deg,
+        rgba(10, 14, 18, .28) 0%,
+        rgba(10, 14, 18, .08) 24%,
+        rgba(10, 14, 18, .22) 100%),
+      url("./assets/night-landscape.webp");
+    background-position: center, center, center;
+    background-size: 100% 100%, 100% 100%, contain;
   }
   .topbar {
     backdrop-filter: none;
