@@ -358,7 +358,7 @@ body::before {
     url("./assets/night-landscape.webp");
   background-position: center, center, center;
   background-repeat: no-repeat;
-  background-size: 100% 100%, 100% 100%, contain;
+  background-size: 100% 100%, 100% 100%, cover;
 }
 .background-reveal {
   position: relative;
@@ -398,7 +398,7 @@ body::before {
         rgba(10, 14, 18, .22) 100%),
       url("./assets/night-landscape.webp");
     background-position: center, center, center;
-    background-size: 100% 100%, 100% 100%, contain;
+    background-size: 100% 100%, 100% 100%, cover;
   }
   .topbar {
     backdrop-filter: none;
@@ -432,7 +432,7 @@ body::before {
   html, body { background:#fff; color:var(--ink); }
   .intro { text-shadow:none; }
   body::before,.mood-studio::before { display:none; }
-  .topbar,.control-bar,.roll-head-actions,.transport,.tool-actions,.lesson-nav,.editor-actions,.utility-strip,.btn { display:none !important; }
+  .topbar,.control-bar,.roll-head-actions,.transport,.tool-actions,.lesson-nav,.editor-actions,.utility-strip,.btn,.background-reveal { display:none !important; }
   .layout { max-width:none; padding:0; }
   .main-grid { display:block; }
   .side-column { display:none; }

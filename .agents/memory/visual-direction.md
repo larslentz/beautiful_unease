@@ -15,8 +15,8 @@ The user approved Atmospheric Background A using their supplied night-landscape 
 
 **How to apply:** Preserve the approved artwork treatment and Velouria palette unless the user requests a change. Keep the existing background previews for reference.
 
-Keep the approved landscape fixed in the viewport while page content scrolls. End the app content with a clear full-screen reveal so the complete painting is visible once users scroll past the interface.
+Keep the approved landscape fixed in the viewport while page content scrolls. Fill the background edge to edge without dark vertical bars. End the app content with a clear full-screen reveal once users scroll past the interface.
 
-**Why:** The user explicitly requested a static background that remains in place while text and panels scroll away.
+**Why:** The user explicitly requested a static background that remains in place while text and panels scroll away, and asked for full-width artwork without dark bars at the sides.
 
-**How to apply:** Keep the artwork on a fixed visual layer; do not attach it to page scrolling. Preserve a content-free ending that exposes the full image.
+**How to apply:** Keep the artwork on a fixed visual layer; do not attach it to page scrolling. Fill the viewport rather than fitting the whole square painting inside it. Preserve a content-free ending that reveals the backdrop.
