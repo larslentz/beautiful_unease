@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
-    "build": "node scripts/prepare-piano-samples.mjs && vite build --config vite.config.ts && cp app.js teaching.js README.txt AUDIO-SAMPLES-LICENSE.txt dist/public/",
+    "build": "node scripts/prepare-piano-samples.mjs && vite build --config vite.config.ts && cp app.js teaching.js theory.js roll-learning.js README.txt AUDIO-SAMPLES-LICENSE.txt dist/public/",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
+    "test": "node --test scripts/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

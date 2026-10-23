@@ -202,8 +202,20 @@
   const canvas = $("pianoRoll"), ctx2d = canvas.getContext("2d");
   const beatWidth = () => state.zoom;
   const rowHeight = 15;
-  const pitchLow = 24, pitchHigh = 86;
+  let pitchLow = 24, pitchHigh = 86;
   const totalBeats = () => state.totalBars * 4;
+  const learning=window.createRollLearning({
+    read:()=>{
+      const reference=state.activeMood?0:({romantic:0,dyads:null,held:0,"blue-hour":2,windowlight:5,tidepool:9})[state.presetId];
+      const tonic=reference===null?null:window.CueTheory.pc(reference+state.transpose);
+      return {events:state.events,totalBeats:totalBeats(),tonic,
+        reference:tonic===null?"No established tonic · paired shapes":`${pitchNames[tonic]} · ${state.activeMood?"applied palette":"starting-mood"} reference (not automatic key detection)`,
+        octave:state.octave,transpose:state.transpose,ending:state.ending,selectedId:state.selectedId,
+        playhead:state.playhead,seekBeat:state.seekBeat,isPlaying:state.isPlaying,pitchLabel};
+    },
+    redraw:()=>renderRoll(),
+    selectNote:id=>selectEvent(id)
+  });
   const displayedEvents = () => state.events;
   const copyEvents = (events) => events.map(e => ({...e}));
   const sortEvents = (events) => events.slice().sort((a,b)=>a.startBeat-b.startBeat || a.midi-b.midi || a.id.localeCompare(b.id));
@@ -226,13 +238,20 @@
   function exactClone() { return copyEvents(PRESETS[state.presetId].events); }
   function makeBaseForSelection(id) { return copyEvents(PRESETS[id].events); }
   function historySnapshot() {
-    return {events:copyEvents(state.events),tempo:state.tempo,seed:state.seed,activeMood:state.activeMood?{...state.activeMood}:null,analysisProvisional:state.analysisProvisional,selectedId:state.selectedId};
+    return {events:copyEvents(state.events),tempo:state.tempo,seed:state.seed,activeMood:state.activeMood?{...state.activeMood}:null,analysisProvisional:state.analysisProvisional,selectedId:state.selectedId,
+      presetId:state.presetId,totalBars:state.totalBars,arrangement:state.arrangement,transpose:state.transpose,
+      ending:state.ending,density:state.density,variant:state.variant,reattack:state.reattack};
   }
   function restoreHistorySnapshot(snapshot) {
     state.events=copyEvents(snapshot.events);state.tempo=snapshot.tempo;state.seed=snapshot.seed;
     state.activeMood=snapshot.activeMood?{...snapshot.activeMood}:null;
     state.analysisProvisional=snapshot.analysisProvisional;state.selectedId=snapshot.selectedId;
+    for(const key of ["presetId","totalBars","arrangement","transpose","ending","density","variant","reattack"])
+      if(Object.hasOwn(snapshot,key))state[key]=snapshot[key];
     $("tempoInput").value=state.tempo;$("seedInput").value=state.seed;
+    $("presetSelect").value=state.presetId;$("transposeInput").value=state.transpose;
+    $("endingSelect").value=state.ending;$("structureSelect").value=state.arrangement;
+    $("densitySelect").value=state.density;$("variantSelect").value=state.variant;
   }
   function remember() {
     state.undo.push(historySnapshot());
@@ -485,6 +504,7 @@
     $("readoutHarmony").textContent=currentHarmony();
     $("octaveMode").value=state.octave; $("calibrationCurrent").textContent=pitchLabel(60);
     renderRoll(); renderTable(); renderSelection(); renderLesson(); renderStartingMoodTeaching(); renderEndingColorTeaching(); renderMoodCandidates(); renderDiagnostics();
+    learning.bindLessons();
     $("undoButton").disabled=!state.undo.length; $("redoButton").disabled=!state.redo.length;
     $("endingSelect").value=state.ending; $("structureSelect").value=String(state.arrangement);
     updatePlayState();
@@ -507,6 +527,8 @@
     return state.ending==="closed"?"Cm(add9)":state.ending==="borrowed"?"C(add9) · borrowed E natural":"Cm(maj9)";
   }
   function getCanvasDimensions() {
+    pitchLow=24;pitchHigh=86;
+    state.events.forEach(e=>{pitchLow=Math.min(pitchLow,e.midi);pitchHigh=Math.max(pitchHigh,e.midi);});
     const dpr=window.devicePixelRatio||1, cssHeight=(pitchHigh-pitchLow+1)*rowHeight+18, labelW=50;
     const width=labelW+totalBeats()*beatWidth()+14;
     const cssWidth=Math.max(width,700);
@@ -526,7 +548,7 @@
       const y=top+(pitchHigh-midi)*rowHeight, isBlack=[1,3,6,8,10].includes(midi%12);
       ctx.fillStyle=isBlack?colors.black:colors.white; ctx.fillRect(labelW,y,w-labelW,rowHeight);
       if(midi%12===0){ctx.fillStyle=colors.tonic;ctx.fillRect(0,y,labelW,rowHeight);}
-      ctx.fillStyle=midi%12===0?colors.text:colors.muted;ctx.font=midi%12===0?"9px system-ui":"8px system-ui";ctx.textAlign="right";ctx.fillText(pitchLabel(midi),labelW-7,y+11);
+      ctx.fillStyle=midi%12===0?colors.text:colors.muted;ctx.font=midi%12===0?'9px "Space Mono", monospace':'8px "Space Mono", monospace';ctx.textAlign="right";ctx.fillText(pitchLabel(midi),labelW-7,y+11);
       ctx.strokeStyle=colors.row;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(labelW,y+rowHeight);ctx.lineTo(w,y+rowHeight);ctx.stroke();
     }
     const bw=beatWidth();
@@ -547,6 +569,7 @@
       if(same.length){ctx.fillStyle=colors.mark;ctx.beginPath();ctx.arc(x+4,y+4,1.7,0,Math.PI*2);ctx.fill();}
       ctx.globalAlpha=1;
     });
+    learning.draw(ctx,{w,h,bw,colors,rowHeight,pitchHigh,pitchLow});
     if(state.isPlaying||state.seekBeat>0){
       const x=labelW+(state.isPlaying?state.playhead:state.seekBeat)*bw;ctx.fillStyle=colors.mark;ctx.fillRect(x-1,0,4,h);ctx.fillStyle=colors.playhead;ctx.fillRect(x,0,2,h);
     }
@@ -574,7 +597,7 @@
     $("notePitch").value=name; $("noteMidi").value=e.midi; $("noteLayer").value=e.layer;
     $("noteBar").value=pos.bar; $("noteBeat").value=fmt(pos.beat); $("noteDuration").value=e.durationBeats; $("noteVelocity").value=e.velocity;
   }
-  function selectEvent(id){state.selectedId=id;renderAll();}
+  function selectEvent(id){learning.selectedNote(id);state.selectedId=id;renderAll();}
   function renderLesson() {
     const l=lessonData[state.currentLesson];
     $("lessonStep").textContent=`LESSON ${String(state.currentLesson+1).padStart(2,"0")} / 07`;
@@ -743,7 +766,7 @@
     const list=$("diagnosticList"), rows=[];
     const rom=PRESETS.romantic.events, dyads=PRESETS.dyads.events;
     rows.push(addDiagnostic("Octave convention",pitchLabel(60,"fl")==="C5"&&pitchLabel(60,"scientific")==="C4"&&pitchLabel(60,"ableton")==="C3"&&midiFromLabel("C5","fl")===60&&midiFromLabel("C4","scientific")===60&&midiFromLabel("C3","ableton")===60,"MIDI 60 labels C5 in FL Studio, C4 in scientific notation and C3 in Ableton Live; the pitch remains 60."));
-    rows.push(addDiagnostic("Calibration pitches",pitchLabel(51)==="Eb4"&&pitchLabel(36)==="C3","Eb4 is MIDI 51 and C3 is MIDI 36 in the FL Studio convention."));
+    rows.push(addDiagnostic("Calibration pitches",pitchLabel(51,"fl")==="Eb4"&&pitchLabel(36,"fl")==="C3"&&pitchLabel(51,"scientific")==="Eb3"&&pitchLabel(36,"scientific")==="C2"&&pitchLabel(51,"ableton")==="Eb2"&&pitchLabel(36,"ableton")==="C1",`MIDI 51 = ${pitchLabel(51)}; MIDI 36 = ${pitchLabel(36)} in the selected octave convention. All three naming conventions are checked without transposing a note.`));
     rows.push(addDiagnostic("Preset 1 opening",rom.some(e=>e.layer==="bass"&&e.startBeat===0&&e.durationBeats===8),"First listed C-minor chord starts at tick 0 and lasts 3,840 ticks."));
     rows.push(addDiagnostic("Bar 3 begins",rom.some(e=>e.startBeat===8),"Beat 9 / bar 3 begins at tick 3,840."));
     rows.push(addDiagnostic("First melody event",rom.some(e=>e.layer==="melody"&&e.startBeat===1&&e.durationBeats===2),"Bar 1 beat 2 starts at tick 480 and lasts 960 ticks."));
@@ -1248,5 +1271,6 @@
   // Seed initial session without applying any transforms; exact preset is canonical.
   state.events=copyEvents(PRESETS.romantic.events);
   renderAll();
-  canvas.parentElement.scrollTop=170;
+  canvas.closest(".roll-viewport").scrollTop=170;
+  document.fonts?.ready.then(()=>renderRoll());
 })();

@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#0a0e12">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="learning.css">
 </head>
 <body>
   <div class="app-shell">
@@ -140,7 +141,29 @@
                 <button class="btn btn-small" id="addNoteButton" type="button">＋ Note</button>
               </div>
             </div>
-            <div class="roll-viewport"><canvas id="pianoRoll" tabindex="0" role="application" aria-label="Interactive piano roll. Use arrow keys to move the selected note; delete removes it; plus adds a note."></canvas></div>
+            <div class="roll-learning-controls" id="rollLearningControls" aria-label="Piano roll learning display">
+              <div class="learning-row">
+                <div class="learning-field"><label for="learningMode">Learning display</label><select id="learningMode"><option value="off">Off</option><option value="essentials">Essentials</option><option value="detailed" selected>Detailed</option></select></div>
+                <div class="learning-field"><label for="learningRegion">Go to chord region</label><select id="learningRegion"></select></div>
+              </div>
+              <fieldset class="learning-categories">
+                <legend>Show on the roll</legend>
+                <label><input type="checkbox" data-learning-category="notes" checked> Note names &amp; scale degrees</label>
+                <label><input type="checkbox" data-learning-category="harmony" checked> Chords &amp; harmonic roles</label>
+                <label><input type="checkbox" data-learning-category="intervals" checked> Intervals between notes</label>
+                <label><input type="checkbox" data-learning-category="motion" checked> Melodic motion &amp; voice leading</label>
+              </fieldset>
+              <p class="learning-explainer">Scale degrees are measured from the <b>tonic</b>, the home note of the key. Chord tones are measured from the <b>chord root</b>, the note a chord is built on. The same pitch can play two roles at once. Tab to a chord region or annotation and press Enter, or tap it, to read its explanation below the roll.</p>
+            </div>
+            <div class="roll-viewport">
+              <div id="theoryTimeline" aria-label="Chord regions over time"></div>
+              <div id="theoryCanvasWrap"><canvas id="pianoRoll" tabindex="0" role="application" aria-label="Interactive piano roll. Use arrow keys to move the selected note; delete removes it; plus adds a note."></canvas></div>
+            </div>
+            <div class="theory-panel">
+              <div id="theoryDetails" tabindex="-1" aria-label="Explanation of the selected musical relationship"></div>
+              <div id="theoryExamples"></div>
+              <div id="theoryStatus" role="status" aria-live="polite"></div>
+            </div>
             <div class="roll-footer">
               <div class="legend"><span><i class="swatch" style="background:var(--roll-bass)"></i>Bass</span><span><i class="swatch" style="background:var(--roll-chord)"></i>Harmony</span><span><i class="swatch" style="background:var(--roll-melody)"></i>Melody</span></div>
               <div class="hint">Double-click to add · drag note to move · drag its right edge to resize · Delete to remove</div>
@@ -213,6 +236,8 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="teaching.js"></script>
+  <script src="theory.js"></script>
+  <script src="roll-learning.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
